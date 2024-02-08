@@ -1,0 +1,13 @@
+Make me a python machine learning program that when I give a data set in a format like this in a csv file:
+F L D2 F2 U D B R D' F2 U R D B R U B2 D F L U';440 402 123|015 211 330|202 025 404|511 135 535|231 445 400|333 255 241
+R' B U' L F' R2 D2 L' U F' D R' B' U R F D2 L' F R;035 103 112|155 410 425|200 225 453|123 333 042|204 445 043|124 150 513
+D F2 R' U B' L U' F' D B' R D' F2 R B2 U2 L F R' U2 B;034 102 045|324 313 150|103 021 403|205 434 421|142 545 025|315 155 232
+B D' R' F2 U' R' B' U' F' D' L' U R2 D2 B R2 F' D' B' R U B2 R' F;140 204 501|513 513 035|212 225 143|013 230 400|454 241 152|235 054 334
+B F' R' U2 F L2 B2 R2 U B D' L2 B' U' R' B L D2 F2 L U2 R' B' L';010 402 550|312 315 004|131 220 104|234 234 543|122 544 513|533 150 452
+R' F U' R' D L2 U B L2 D F L B2 R D2 F' R' U' F D;240 301 350|105 214 110|442 021 122|353 430 533|430 140 534|451 255 522
+
+where the first part is the rubiks cube scramble and the next part divided by a semicolan is the rubiks cube state after applying the scramble to the cube, remember that this is a 3d array and each number means a color so for example 0 ir white, 1 is green, 2 is orange and so on. what I want from you is to create a python script that trains a pytorch model by getting the data from the data set that is in a csv format file and it doesn't have a header row. for training it will use the data set but when the model is finished training I need it to as input take a rubiks cube state and in output i want it to output the coresponding scramble.
+
+
+
+You stopped at preprocesing aka tokenizing your scrambles aka making them the same length aka padding them
