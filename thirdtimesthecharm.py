@@ -3,38 +3,35 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from sklearn import preprocessing
 from torch.utils.data import Dataset, DataLoader
 from torch.nn.utils.rnn import pad_sequence
+import torch.nn.functional as F
 
 # Step 1: Data Preprocessing
 def preprocess_data(file_path):
-    file = open(file_path)
-    csvreader = csv.reader(file)
-    scramble = []
-    stateStr = []
-    for row in csvreader:
-        scramble.append(str(row).split(";")[0][2:])
-        stateStr.append(str(row).split(";")[1][:-2])
+    with open(file_path, 'r') as file:
+        csvreader = csv.reader(file)
+        scramble = []
+        stateStr = []
+        for row in csvreader:
+            row_str = row[0]
+            scramble.append(row_str.split(";")[0])
+            stateStr.append(row_str.split(";")[1])
 
-    state = []
+        state = []
 
-    for row in stateStr:
-        cube = []
-        # Split the row by "|"
-        faces = row.split("|")
-        # Iterate through each face in the row and print it
-        for face in faces:
-            rows = face.split(" ")
-            facesInt = []
-            for row in rows:
-                elements = [*row]
-                desired_array = [int(numeric_string) for numeric_string in elements]
-                facesInt.append(desired_array)
-            cube.append(facesInt)
-        state.append(cube)                    
-
-    file.close()
+        for row in stateStr:
+            cube = []
+            faces = row.split("|")
+            for face in faces:
+                rows = face.split(" ")
+                facesInt = []
+                for row in rows:
+                    elements = [*row]
+                    desired_array = [int(numeric_string) for numeric_string in elements]
+                    facesInt.append(desired_array)
+                cube.append(facesInt)
+            state.append(cube)
 
     return scramble, state
 
@@ -59,22 +56,44 @@ class RubiksCubeDataset(Dataset):
             return self.states[idx], self.scrambles[idx]
 
 
-# Example list of scrambles
-scrambles = [
-    "R U R' U' R' F R2 U' R' U' R U R' F'",
-    "U D R2 B2 L2 U R' D' R2 F2 U' B2 D2 F2 L2 R2 U'"
-]
+# Step 3: Model Definition
+class RubiksCubeModel(nn.Module):
+    def __init__(self):
+        super(RubiksCubeModel, self).__init__()
 
-# Tokenize each scramble by splitting on spaces
-tokenized_scrambles = [scramble.split() for scramble in scrambles]
+    def forward(self, x):
+        return x
 
-# Convert each tokenized sequence to a tensor
-print(torch.tensor(tokenized_scrambles[0][1]))
-tensorized_scrambles = [torch.tensor([move for move in scramble]) for scramble in tokenized_scrambles]
+# Step 4: Model Training
+def train_model(model, train_loader, num_epochs, learning_rate):
+    criterion = nn.CrossEntropyLoss()
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
-# Pad the sequences to a maximum length of 25 moves
-padded_scrambles = pad_sequence(tensorized_scrambles, batch_first=True, padding_value=0)
+    for epoch in range(num_epochs):
+        for states, scrambles in train_loader:
+            optimizer.zero_grad()
+            outputs = model(states)
+            loss = criterion(outputs, scrambles)
+            loss.backward()
+            optimizer.step()
 
-# Print the padded scrambles
-print(padded_scrambles)
+# Step 5: Model Testing
+def test_model(model, test_loader):
+    with torch.no_grad():
+        total_correct = 0
+        total_samples = 0
+        for states, scrambles in test_loader:
+            outputs = model(states)
+            _, predicted = torch.max(outputs.data, 1)
+            total_samples += scrambles.size(0)
+            total_correct += (predicted == scrambles).sum().item()
 
+        accuracy = total_correct / total_samples
+        print(f"Test Accuracy: {accuracy * 100}%")
+
+# Step 6: Model Usage
+def get_scramble(model, cube_state):
+    with torch.no_grad():
+        output = model(cube_state)
+        _, predicted = torch.max(output.data, 1)
+        return predicted.item()
