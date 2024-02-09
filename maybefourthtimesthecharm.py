@@ -49,18 +49,20 @@ scrambles, states = preprocess_data('dataset.csv')
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # Define the RNN model class
-class RNNModel(nn.Module):
+class LSTMModel(nn.Module):
     def __init__(self, input_size, hidden_size, output_size, n_layers):
-        super(RNNModel, self).__init__()
+        super(LSTMModel, self).__init__()
         self.hidden_size = hidden_size
         self.n_layers = n_layers
 
-        self.rnn = nn.RNN(input_size, hidden_size, n_layers, batch_first=True)
+        self.lstm = nn.LSTM(input_size, hidden_size, n_layers, batch_first=True)
         self.fc = nn.Linear(hidden_size, output_size)
 
     def forward(self, x):
         h0 = torch.zeros(self.n_layers, x.size(0), self.hidden_size).to(x.device)
-        out, _ = self.rnn(x.unsqueeze(1), h0)
+        c0 = torch.zeros(self.n_layers, x.size(0), self.hidden_size).to(x.device)
+
+        out, _ = self.lstm(x.unsqueeze(1), (h0, c0))
         out = out[:, -1, :]
         out = self.fc(out)
         return out
@@ -100,11 +102,11 @@ input_size = len(scrambles[0]) # number of features
 hidden_size = 128
 output_size = len(states[0]) # number of output classes
 n_layers = 2
-model = RNNModel(input_size, hidden_size, output_size, n_layers)
+model = LSTMModel(input_size, 2*hidden_size, output_size, 2*n_layers)
 model = model.to(device)
 
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
 
 # Call the training loop function
 batch_size = 64
@@ -114,4 +116,43 @@ data_loader = create_data_loader(scrambles, states, batch_size)
 train(model, data_loader, criterion, optimizer, num_epochs)
 
 
+#265 114 326|654 426 341|155 236 314|432 545 123|135 451 636|235 661 422
+cube_state = [265, 114, 326, 654, 426, 341, 155, 236, 314, 432, 545, 123, 135, 451, 636, 235, 661, 422, 0, 0, 0, 0, 0 ,0 ,0]
 
+model.eval()
+
+# Convert the cube state to a tensor and add an extra dimension for batch size
+cube_state = torch.tensor(cube_state, dtype=torch.float32).unsqueeze(0).to(device)
+
+# Pass the cube state to the model
+output = model(cube_state)
+
+def output_to_scramble(output):
+    # Define a mapping from output values to moves
+    move_mapping = {1:"R", 2:"R'", 3:"L", 4:"L'", 5:"U", 6:"U'", 7:"D", 8:"D'", 9:"F", 10:"F'", 11:"B", 12:"B'", 13:"R2", 14:"L2", 15:"U2", 16:"D2", 17:"F2", 18:"B2", 0:""}
+
+    # Convert the output tensor to a list of integers
+    output = output.detach().numpy().tolist()
+
+    print(output)
+
+    for i in range(len(output[0])):
+        output[0][i] = round(output[0][i] * 100)
+        output[0][i] = int(output[0][i])
+        if output[0][i] < 0:
+            output[0][i] *= -1
+
+    print(output)
+
+    scramble = "";
+
+    for i in range(len(output[0])):
+        scramble += move_mapping[output[0][i]] + " "
+
+    return scramble
+
+# Postprocess the output to get the scramble
+# This will depend on how your model's output corresponds to scrambles
+scramble = output_to_scramble(output)
+
+print('Scramble:', scramble)
