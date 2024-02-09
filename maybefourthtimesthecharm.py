@@ -46,16 +46,21 @@ def preprocess_data(file_path):
 # Preprocess the data
 
 scrambles, states = preprocess_data('dataset.csv')
+
+scrambles = (scrambles - np.mean(scrambles)) / np.std(scrambles)
+states = (states - np.mean(states)) / np.std(states)
+
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # Define the RNN model class
 class LSTMModel(nn.Module):
-    def __init__(self, input_size, hidden_size, output_size, n_layers):
+    def __init__(self, input_size, hidden_size, output_size, n_layers, dropout_prob):
         super(LSTMModel, self).__init__()
         self.hidden_size = hidden_size
         self.n_layers = n_layers
 
-        self.lstm = nn.LSTM(input_size, hidden_size, n_layers, batch_first=True)
+        self.lstm = nn.LSTM(input_size, hidden_size, n_layers, batch_first=True, dropout=dropout_prob)
+        self.dropout = nn.Dropout(dropout_prob)
         self.fc = nn.Linear(hidden_size, output_size)
 
     def forward(self, x):
@@ -63,7 +68,7 @@ class LSTMModel(nn.Module):
         c0 = torch.zeros(self.n_layers, x.size(0), self.hidden_size).to(x.device)
 
         out, _ = self.lstm(x.unsqueeze(1), (h0, c0))
-        out = out[:, -1, :]
+        out = self.dropout(out[:, -1, :])
         out = self.fc(out)
         return out
 
@@ -102,14 +107,14 @@ input_size = len(scrambles[0]) # number of features
 hidden_size = 128
 output_size = len(states[0]) # number of output classes
 n_layers = 2
-model = LSTMModel(input_size, 2*hidden_size, output_size, 2*n_layers)
+model = LSTMModel(input_size, hidden_size, output_size, n_layers, 0.5)
 model = model.to(device)
 
 criterion = nn.CrossEntropyLoss()
-optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
 
 # Call the training loop function
-batch_size = 64
+batch_size = 32
 num_epochs = 10
 
 data_loader = create_data_loader(scrambles, states, batch_size)
