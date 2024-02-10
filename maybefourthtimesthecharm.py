@@ -5,11 +5,15 @@ from torch.utils.data import TensorDataset, random_split, DataLoader
 import csv
 import numpy as np
 from torch.nn.utils.rnn import pad_sequence
+from sklearn.model_selection import train_test_split
+import pandas as pd
+
 
 # R: 1, R':2, L:3, L':4, U:5, U':6, D:7, D':8, F:9, F':10, B:11, B':12, R2:13, L2:14, U2:15, D2:16, F2:17, B2:18
 
 # Preprocess the data
 def preprocess_data(file_path):
+
     # Define the mapping from moves to integers
     move_to_int = {"R": 1, "R'": 2, "L": 3, "L'": 4, "U": 5, "U'": 6, "D": 7, "D'": 8, "F": 9, "F'": 10, "B": 11, "B'": 12, "R2": 13, "L2": 14, "U2": 15, "D2": 16, "F2": 17, "B2": 18, "": 0}
 
@@ -41,14 +45,24 @@ def preprocess_data(file_path):
 
     return scramble, state
 
-# Load the data
+# List to hold all datasets
+all_datasets = []
 
-# Preprocess the data
+# Loop over all dataset files
+for i in range(3, 23):  # 3 to 22 inclusive
 
-scrambles, states = preprocess_data('dataset.csv')
+    # Preprocess the dataset
+    scrambles, states = preprocess_data(f'data/dataset({i}).csv')
 
-scrambles = (scrambles - np.mean(scrambles)) / np.std(scrambles)
-states = (states - np.mean(states)) / np.std(states)
+    # Add the preprocessed data to the list
+    all_datasets.append((scrambles, states))
+
+# Concatenate all datasets into a single one
+full_scrambles = np.concatenate([data[0] for data in all_datasets])
+full_states = np.concatenate([data[1] for data in all_datasets])
+
+# Now you can split full_dataset into training and testing sets
+train_scrambles, test_scrambles, train_states, test_states = train_test_split(full_scrambles, full_states, test_size=0.2, random_state=42)
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -99,9 +113,6 @@ def train(model, data_loader, criterion, optimizer, num_epochs):
 
         print(f'Epoch {epoch+1}/{num_epochs}, Loss: {loss.item()}')
 
-# Load the data
-scrambles, states = preprocess_data('dataset.csv')
-
 # Instantiate the model and optimizer
 input_size = len(scrambles[0]) # number of features
 hidden_size = 128
@@ -110,54 +121,54 @@ n_layers = 2
 model = LSTMModel(input_size, hidden_size, output_size, n_layers, 0.5)
 model = model.to(device)
 
-criterion = nn.CrossEntropyLoss()
+criterion = nn.MSELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
 
 # Call the training loop function
 batch_size = 32
 num_epochs = 10
 
-data_loader = create_data_loader(scrambles, states, batch_size)
-train(model, data_loader, criterion, optimizer, num_epochs)
+train_data_loader = create_data_loader(train_scrambles, train_states, batch_size)
+test_data_loader = create_data_loader(test_scrambles, test_states, batch_size)
+
+# Train the model on the training data
+train(model, train_data_loader, criterion, optimizer, num_epochs)
+
+def test(model, data_loader, criterion):
+    model.eval()
+    total_loss = 0
+    with torch.no_grad():
+        for scrambles, states in data_loader:
+            scrambles = scrambles.to(device)
+            states = states.to(device)
+            outputs = model(scrambles)
+            loss = criterion(outputs, states)
+            total_loss += loss.item()
+    return total_loss / len(data_loader)
+
+# Call the testing loop function
+test_loss = test(model, test_data_loader, criterion)
+print('Test Loss:', test_loss)
 
 
-#265 114 326|654 426 341|155 236 314|432 545 123|135 451 636|235 661 422
-cube_state = [265, 114, 326, 654, 426, 341, 155, 236, 314, 432, 545, 123, 135, 451, 636, 235, 661, 422, 0, 0, 0, 0, 0 ,0 ,0]
+def evaluate(model, data_loader):
+    model.eval()
+    correct_predictions = 0
+    total_predictions = 0
+    with torch.no_grad():
+        for scrambles, states in data_loader:
+            scrambles = scrambles.to(device)
+            states = states.to(device)
+            outputs = model(scrambles)
+            _, predicted = torch.max(outputs.data, 1)
+            states = torch.argmax(states, dim=1)  # Convert states to class labels
+            total_predictions += states.size(0)
+            correct_predictions += (predicted == states).sum().item()
+    return correct_predictions / total_predictions
 
-model.eval()
+# Call the evaluate function to calculate the accuracy
+accuracy = evaluate(model, test_data_loader)
+print('Accuracy:', accuracy)
 
-# Convert the cube state to a tensor and add an extra dimension for batch size
-cube_state = torch.tensor(cube_state, dtype=torch.float32).unsqueeze(0).to(device)
-
-# Pass the cube state to the model
-output = model(cube_state)
-
-def output_to_scramble(output):
-    # Define a mapping from output values to moves
-    move_mapping = {1:"R", 2:"R'", 3:"L", 4:"L'", 5:"U", 6:"U'", 7:"D", 8:"D'", 9:"F", 10:"F'", 11:"B", 12:"B'", 13:"R2", 14:"L2", 15:"U2", 16:"D2", 17:"F2", 18:"B2", 0:""}
-
-    # Convert the output tensor to a list of integers
-    output = output.detach().numpy().tolist()
-
-    print(output)
-
-    for i in range(len(output[0])):
-        output[0][i] = round(output[0][i] * 100)
-        output[0][i] = int(output[0][i])
-        if output[0][i] < 0:
-            output[0][i] *= -1
-
-    print(output)
-
-    scramble = "";
-
-    for i in range(len(output[0])):
-        scramble += move_mapping[output[0][i]] + " "
-
-    return scramble
-
-# Postprocess the output to get the scramble
-# This will depend on how your model's output corresponds to scrambles
-scramble = output_to_scramble(output)
-
-print('Scramble:', scramble)
+# #265 114 326|654 426 341|155 236 314|432 545 123|135 451 636|235 661 422
+# cube_state = [265, 114, 326, 654, 426, 341, 155, 236, 314, 432, 545, 123, 135, 451, 636, 235, 661, 422, 0, 0, 0, 0, 0 ,0 ,0]
