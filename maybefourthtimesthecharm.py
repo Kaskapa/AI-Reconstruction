@@ -45,27 +45,6 @@ def preprocess_data(file_path):
 
     return scramble, state
 
-# List to hold all datasets
-all_datasets = []
-
-# Loop over all dataset files
-for i in range(3, 23):  # 3 to 22 inclusive
-
-    # Preprocess the dataset
-    scrambles, states = preprocess_data(f'data/dataset({i}).csv')
-
-    # Add the preprocessed data to the list
-    all_datasets.append((scrambles, states))
-
-# Concatenate all datasets into a single one
-full_scrambles = np.concatenate([data[0] for data in all_datasets])
-full_states = np.concatenate([data[1] for data in all_datasets])
-
-# Now you can split full_dataset into training and testing sets
-train_scrambles, test_scrambles, train_states, test_states = train_test_split(full_scrambles, full_states, test_size=0.2, random_state=42)
-
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
 # Define the RNN model class
 class LSTMModel(nn.Module):
     def __init__(self, input_size, hidden_size, output_size, n_layers, dropout_prob):
@@ -99,6 +78,9 @@ def create_data_loader(scrambles, states, batch_size):
 
 # Define the training loop
 def train(model, data_loader, criterion, optimizer, num_epochs):
+    best_val_loss = float("inf")
+    epochs_no_improve = 0
+    n_epochs_stop = 5  # Number of epochs to wait before stopping
     for epoch in range(num_epochs):
         for i, (scrambles, states) in enumerate(data_loader):
             scrambles = scrambles.to(device)
@@ -110,30 +92,36 @@ def train(model, data_loader, criterion, optimizer, num_epochs):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+        model.eval()  # Set model to evaluation mode
+        total_val_loss = 0
+        with torch.no_grad():
+            for scrambles, states in valid_data_loader:
+                scrambles = scrambles.to(device)
+                states = states.to(device)
+                outputs = model(scrambles)
+                val_loss = criterion(outputs, states)
+                total_val_loss += val_loss.item()
 
+        avg_val_loss = total_val_loss / len(test_data_loader)
+
+        # Check if the validation loss has improved
+        if avg_val_loss < best_val_loss:
+            torch.save(model.state_dict(), 'best_model.pt')
+            best_val_loss = avg_val_loss
+            epochs_no_improve = 0
+        else:
+            epochs_no_improve += 1
+
+        # If the validation loss hasn't improved for n_epochs_stop epochs, stop training
+        if epochs_no_improve == n_epochs_stop:
+            print('Early stopping!')
+            break
         print(f'Epoch {epoch+1}/{num_epochs}, Loss: {loss.item()}')
+    model.load_state_dict(torch.load('best_model.pt'))
 
-# Instantiate the model and optimizer
-input_size = len(scrambles[0]) # number of features
-hidden_size = 128
-output_size = len(states[0]) # number of output classes
-n_layers = 2
-model = LSTMModel(input_size, hidden_size, output_size, n_layers, 0.5)
-model = model.to(device)
-
-criterion = nn.MSELoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
-
-# Call the training loop function
-batch_size = 32
-num_epochs = 10
-
-train_data_loader = create_data_loader(train_scrambles, train_states, batch_size)
-test_data_loader = create_data_loader(test_scrambles, test_states, batch_size)
+# Load the data
 
 # Train the model on the training data
-train(model, train_data_loader, criterion, optimizer, num_epochs)
-
 def test(model, data_loader, criterion):
     model.eval()
     total_loss = 0
@@ -147,9 +135,6 @@ def test(model, data_loader, criterion):
     return total_loss / len(data_loader)
 
 # Call the testing loop function
-test_loss = test(model, test_data_loader, criterion)
-print('Test Loss:', test_loss)
-
 
 def evaluate(model, data_loader):
     model.eval()
@@ -166,9 +151,47 @@ def evaluate(model, data_loader):
             correct_predictions += (predicted == states).sum().item()
     return correct_predictions / total_predictions
 
-# Call the evaluate function to calculate the accuracy
-accuracy = evaluate(model, test_data_loader)
-print('Accuracy:', accuracy)
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+for i in range(3, 63):  # 3 to 22 inclusive
+    # Preprocess the dataset
+    scrambles, states = preprocess_data(f'data/dataset({i}).csv')
+
+    if(i == 3):
+        # Instantiate the model and optimizer
+        input_size = len(scrambles[0]) # number of features
+        hidden_size = 256
+        output_size = len(states[0]) # number of output classes
+        n_layers = 3
+        model = LSTMModel(input_size, hidden_size, output_size, n_layers, 0.5)
+        model = model.to(device)
+
+        criterion = nn.CrossEntropyLoss()
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-5)
+
+        # Call the training loop function
+        batch_size = 32
+        num_epochs = 10
+
+    # Split the data into training, validation, and testing sets
+    train_scrambles, temp_scrambles, train_states, temp_states = train_test_split(scrambles, states, test_size=0.3, random_state=42)
+    valid_scrambles, test_scrambles, valid_states, test_states = train_test_split(temp_scrambles, temp_states, test_size=1/3, random_state=42)
+
+    # Create data loaders for the training, validation, and testing sets
+    train_data_loader = create_data_loader(train_scrambles, train_states, batch_size)
+    valid_data_loader = create_data_loader(valid_scrambles, valid_states, batch_size)
+    test_data_loader = create_data_loader(test_scrambles, test_states, batch_size)
+
+    # Train the model on the training data
+    train(model, train_data_loader, criterion, optimizer, num_epochs)
+
+    # Evaluate the model on the testing data
+    test_loss = test(model, test_data_loader, criterion)
+    print('Test Loss:', test_loss)
+
+    # Calculate the accuracy
+    accuracy = evaluate(model, test_data_loader)
+    print('Accuracy:', accuracy)
 
 # #265 114 326|654 426 341|155 236 314|432 545 123|135 451 636|235 661 422
 # cube_state = [265, 114, 326, 654, 426, 341, 155, 236, 314, 432, 545, 123, 135, 451, 636, 235, 661, 422, 0, 0, 0, 0, 0 ,0 ,0]
