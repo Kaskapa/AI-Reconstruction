@@ -9,7 +9,10 @@ from sklearn.model_selection import train_test_split
 import pandas as pd
 
 
-# R: 1, R':2, L:3, L':4, U:5, U':6, D:7, D':8, F:9, F':10, B:11, B':12, R2:13, L2:14, U2:15, D2:16, F2:17, B2:18
+# R: 1, R':2, L:3, L':4, U:5, U':6, D:7, D':8, F:9, F':10, B:11, B':12, R2:13, L2:14, U2:15, D2:16, F2:17, B2:18, "":0
+
+#D' F2 L U' R' D' F R2 D2 B' L' F' U' D2 R2 B2 L2 F U' D
+# 8 17 14 6 2 8 17 1 13 16 4 10 6 16 13 18 14 6 8
 
 # Preprocess the data
 def preprocess_data(file_path):
@@ -46,24 +49,30 @@ def preprocess_data(file_path):
     return scramble, state
 
 # Define the RNN model class
-class LSTMModel(nn.Module):
-    def __init__(self, input_size, hidden_size, output_size, n_layers, dropout_prob):
-        super(LSTMModel, self).__init__()
+class Seq2Seq(nn.Module):
+    def __init__(self, input_size, hidden_size, output_size, n_layers):
+        super(Seq2Seq, self).__init__()
         self.hidden_size = hidden_size
         self.n_layers = n_layers
 
-        self.lstm = nn.LSTM(input_size, hidden_size, n_layers, batch_first=True, dropout=dropout_prob)
-        self.dropout = nn.Dropout(dropout_prob)
+        self.encoder = nn.LSTM(input_size=25, hidden_size=hidden_size, num_layers=n_layers, batch_first=True)
+        self.decoder = nn.LSTM(input_size=25, hidden_size=hidden_size, num_layers=n_layers, batch_first=True)
         self.fc = nn.Linear(hidden_size, output_size)
 
     def forward(self, x):
-        h0 = torch.zeros(self.n_layers, x.size(0), self.hidden_size).to(x.device)
-        c0 = torch.zeros(self.n_layers, x.size(0), self.hidden_size).to(x.device)
+        # Pass the input through the encoder
+        _, (hidden, cell) = self.encoder(x)
 
-        out, _ = self.lstm(x.unsqueeze(1), (h0, c0))
-        out = self.dropout(out[:, -1, :])
-        out = self.fc(out)
-        return out
+        # Prepare the decoder input as a sequence of zeros
+        decoder_input = torch.zeros_like(x)
+
+        # Pass the decoder input and the encoder hidden state through the decoder
+        output, _ = self.decoder(decoder_input, (hidden, cell))
+
+        # Pass the decoder outputs through the fully connected layer
+        output = self.fc(output)
+
+        return output
 
 # Convert the 2D arrays into PyTorch tensors
 def to_tensor(data):
@@ -82,6 +91,8 @@ def train(model, data_loader, criterion, optimizer, num_epochs):
     epochs_no_improve = 0
     n_epochs_stop = 5  # Number of epochs to wait before stopping
     for epoch in range(num_epochs):
+        total_loss = 0
+        total_val_loss = 0
         for i, (scrambles, states) in enumerate(data_loader):
             scrambles = scrambles.to(device)
             states = states.to(device)
@@ -92,6 +103,8 @@ def train(model, data_loader, criterion, optimizer, num_epochs):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+
+            total_loss += loss.item()
         model.eval()  # Set model to evaluation mode
         total_val_loss = 0
         with torch.no_grad():
@@ -102,8 +115,8 @@ def train(model, data_loader, criterion, optimizer, num_epochs):
                 val_loss = criterion(outputs, states)
                 total_val_loss += val_loss.item()
 
-        avg_val_loss = total_val_loss / len(test_data_loader)
-
+        avg_val_loss = total_val_loss / len(valid_data_loader)
+        model.avg_val_loss = avg_val_loss
         # Check if the validation loss has improved
         if avg_val_loss < best_val_loss:
             torch.save(model.state_dict(), 'best_model.pt')
@@ -153,7 +166,8 @@ def evaluate(model, data_loader):
 
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-for i in range(3, 63):  # 3 to 22 inclusive
+best_val_loss = float("inf")
+for i in range(3, 4):  # 3 to 22 inclusive
     # Preprocess the dataset
     scrambles, states = preprocess_data(f'data/dataset({i}).csv')
 
@@ -163,16 +177,17 @@ for i in range(3, 63):  # 3 to 22 inclusive
         hidden_size = 256
         output_size = len(states[0]) # number of output classes
         n_layers = 3
-        model = LSTMModel(input_size, hidden_size, output_size, n_layers, 0.5)
+        model = Seq2Seq(input_size, hidden_size, output_size, n_layers)
         model = model.to(device)
 
-        criterion = nn.CrossEntropyLoss()
+        criterion = nn.BCEWithLogitsLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-5)
 
         # Call the training loop function
         batch_size = 32
         num_epochs = 10
-
+    else:
+        model.load_state_dict(torch.load('best_model.pt'))
     # Split the data into training, validation, and testing sets
     train_scrambles, temp_scrambles, train_states, temp_states = train_test_split(scrambles, states, test_size=0.3, random_state=42)
     valid_scrambles, test_scrambles, valid_states, test_states = train_test_split(temp_scrambles, temp_states, test_size=1/3, random_state=42)
@@ -193,5 +208,35 @@ for i in range(3, 63):  # 3 to 22 inclusive
     accuracy = evaluate(model, test_data_loader)
     print('Accuracy:', accuracy)
 
+    if model.avg_val_loss < best_val_loss:
+        torch.save(model.state_dict(), 'best_model.pt')
+        best_val_loss = model.avg_val_loss
+
 # #265 114 326|654 426 341|155 236 314|432 545 123|135 451 636|235 661 422
 # cube_state = [265, 114, 326, 654, 426, 341, 155, 236, 314, 432, 545, 123, 135, 451, 636, 235, 661, 422, 0, 0, 0, 0, 0 ,0 ,0]
+
+def predict_state(model, scramble):
+    model.eval()  # Set the model to evaluation mode
+
+    # Convert the scramble to the format expected by your model
+    # This will depend on how you've preprocessed your scrambles
+    # Here I'm assuming you need to convert it to a PyTorch tensor
+    scramble_tensor = torch.tensor(scramble).float().to(device)
+
+    # Add an extra dimension to match the input size expected by your model
+    scramble_tensor = scramble_tensor.unsqueeze(0)
+
+    # Get the model's prediction
+    prediction = model(scramble_tensor)
+
+    # Convert the prediction to the format of your scramble states
+    # This will depend on how your model's outputs relate to your states
+    # Here I'm assuming each position in the output is a probability distribution over possible scramble states
+    predicted_state = prediction.argmax(dim=2).tolist()
+
+    return predicted_state
+
+# Use the function
+scramble = [8, 17, 14, 6, 2, 8, 17, 1, 13, 16, 4, 10, 6, 16, 13, 18, 14, 6, 8, 0, 0, 0, 0, 0, 0]  # Replace this with your actual scramble
+predicted_state = predict_state(model, scramble)
+print('Predicted state:', predicted_state)

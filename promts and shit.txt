@@ -11,3 +11,5 @@ where the first part is the rubiks cube scramble and the next part divided by a 
 
 
 You stopped at preprocesing aka tokenizing your scrambles aka making them the same length aka padding them
+
+I might stop for today I am getting tierd, but so that i dont forget, here is an idea, what if we test the accuracy by applying the scramble to an accual cube and check if it maches the state provided as the result. You know what I mean.
