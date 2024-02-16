@@ -13,3 +13,5 @@ where the first part is the rubiks cube scramble and the next part divided by a 
 You stopped at preprocesing aka tokenizing your scrambles aka making them the same length aka padding them
 
 I might stop for today I am getting tierd, but so that i dont forget, here is an idea, what if we test the accuracy by applying the scramble to an accual cube and check if it maches the state provided as the result. You know what I mean.
+
+He needs to think differently, the thing is that it just does by random and the goal state always changes, but with the nature of the cube you just can't suddenly think of thingking if you catch my drifft, skrt skrt, vroom vroom, im in my mums caaar, vroom vromom, get out mi car, NO!
