@@ -15,3 +15,39 @@ You stopped at preprocesing aka tokenizing your scrambles aka making them the sa
 I might stop for today I am getting tierd, but so that i dont forget, here is an idea, what if we test the accuracy by applying the scramble to an accual cube and check if it maches the state provided as the result. You know what I mean.
 
 He needs to think differently, the thing is that it just does by random and the goal state always changes, but with the nature of the cube you just can't suddenly think of thingking if you catch my drifft, skrt skrt, vroom vroom, im in my mums caaar, vroom vromom, get out mi car, NO!
+
+add new while loop it loops it through until it solves it then it stops and goes to the next episode.
+
+Total Sugoi Rewards: -597600
+Solved: 44
+
+Total Sugoi Rewards: -497569
+Solved: 45
+
+Total Sugoi Rewards: -1898349
+Solved: 31
+
+Total Sugoi Rewards: -1195567
+Solved: 88
+
+Total Sugoi Rewards: -895138
+Solved: 91
+
+
+episode = 500
+time: 4:09 PM
+
+after 33 min
+
+episode = 600
+time: 4:42 PM
+
+after 26 min
+
+episode = 700
+time: 5:08 PM
+
+after 43 min
+
+episode = 800
+time: 5:51 PM
