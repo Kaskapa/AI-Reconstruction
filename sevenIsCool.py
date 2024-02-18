@@ -10,6 +10,9 @@ import pandas as pd
 import random
 from collections import deque
 import os
+import time
+import logging
+import copy
 
 # Preprocess the data
 def preprocess_data(file_path):
@@ -297,30 +300,35 @@ def turnCube(move, cube):
     elif move == "B2":
         cube.back_turn()
         cube.back_turn()
-    else:
-        print(cube.cube)
-
     return cube
 
 class RubiksCubeEnvironment:
     def __init__(self, file_path):
         self.states = preprocess_data(file_path)
         self.state = Cube()  # Initialize with a solved Rubik's Cube
-        self.state.cube = self.states[0];
+        self.state.cube = copy.deepcopy(self.states[0])
         self.ACTION_SPACE = ["R", "R'", "L", "L'", "U", "U'", "D", "D'", "F", "F'", "B", "B'", "R2", "L2", "U2", "D2", "F2", "B2"]
         self.reward = 0
-        self.move_counter = 0;
-        self.max_moves = 10;
-        self.solved = 0;
+        self.move_counter = 0
+        self.max_moves = 10
+        self.solved = 0
+        self.previous_moves = []
+        self.stoped_at_episode = 51
+        self.stoped_at_n = 1
 
-        self.sugoi_rewards = 0;
+        self.sugoi_rewards = 0
 
     def step(self, action):
         # Perform the action on the cube (e.g., rotate a face)
-        cube = turnCube(action, self.state)
-        self.state = cube
+        self.state = turnCube(action, self.state)
+
         # Calculate the reward based on the current state
         self.reward = self._calculate_reward()
+
+        if self._is_redundant_move(action):
+            # Penalize the agent and return the current state and a negative reward
+            self.reward = -10
+            return self.state, self.reward, False
 
         # Check if the goal state is reached
         done = self._is_solved()
@@ -329,22 +337,36 @@ class RubiksCubeEnvironment:
 
     def _calculate_reward(self):
         if self._is_solved():
-            print("OMG so sugoi! you solved the cube this is so awesome! Your mother aproves and is finally prud of you! Go get them tiger on god no cap this is fucking awsome!")
             self.solved += 1;
-            return 100000
+            return 1_000_000
         elif self.move_counter == self.max_moves:
             return -50
         else:
             return -1
 
     def _is_solved(self):
-        return self.state.is_white_cross_solved() or self.state.is_orange_cross_solved() or self.state.is_green_cross_solved() or self.state.is_red_cross_solved() or self.state.is_blue_cross_solved() or self.state.is_yellow_cross_solved()
+        return self.state.is_white_cross_solved()
 
     def reset(self):
         self.state.reset()
 
     def set_state(self, state_array):
         self.state.cube = state_array.reshape(6, 3, 3)
+
+    #stoped here!
+    def _is_redundant_move(self, action):
+        # Check if the new move cancels out the effect of the last move(s) in the history
+        if len(self.previous_moves) >= 2:
+            last_move = self.previous_moves[-1]
+            second_last_move = self.previous_moves[-2]
+
+            # Check if the new move and the last move cancel each other out
+            if action + "'" == last_move and action[:-1] == second_last_move:
+                return True
+            elif action[:-1] == last_move and action + "'" == second_last_move:
+                return True
+
+        return False
 
 # Define the Q-network architecture
 class QNetwork(nn.Module):
@@ -426,59 +448,79 @@ class DQNAgent:
 
 
 # Create environment
-env = RubiksCubeEnvironment(file_path="new_data/18to22/file(30).csv")
+env = RubiksCubeEnvironment(file_path="new_data/18to22/File(30).csv")
 
 # Create DQN agent
 input_size = 6*3*3  # Size of flattened Rubik's Cube state
 output_size = len(env.ACTION_SPACE)  # Number of possible actions
 
-model_path = 'trained_model.pth'
-
+model_path = 'models/trained_model_episode_50.pth'
 
 agent = DQNAgent(input_size, output_size)
 if os.path.isfile(model_path):
     # Load the model
-    agent.load_state_dict(torch.load(model_path))
+    agent.q_network.load_state_dict(torch.load(model_path))
     print("Model loaded successfully!")
+    time.sleep(5)
+else:
+    print(f"No model found at {model_path}. Please train a model first.")
 
 
 TARGET_UPDATE_FREQUENCY = 100
 
 # Training loop
-env.max_moves = 100  # Set your maximum limit
+env.max_moves = 20  # Set your maximum limit
+logging.basicConfig(filename='training_log.txt', level=logging.INFO, format='%(message)s')
+start_from_n = env.stoped_at_n;
 
-for n in range(5):
-    for episode in range(10_000):
+for n in range(start_from_n, 10):
+    start_from = env.stoped_at_episode
+    for episode in range(start_from, 10_000):
         done = False
-        total_reward = 0
-        env.move_counter = 0  # Initialize move counter at the start of each episode
+        env.state.cube = copy.deepcopy(env.states[episode])  # Set the state for the next episode
+        while not done:
+            total_reward = 0
+            env.move_counter = 0  # Initialize move counter at the start of each episode
 
-        while not done and env.move_counter < env.max_moves:
-            state = env.state.get_flattened_state()
-            action = agent.select_action(state)
-            next_state, reward, done = env.step(env.ACTION_SPACE[action])
-            next_state = next_state.get_flattened_state()
-            agent.train()
-            total_reward += reward
-            env.set_state(next_state)
-            env.move_counter += 1  # Increment move counter after each action
+            while not done and env.move_counter < env.max_moves:
+                state = env.state.get_flattened_state()
 
-            print(f"Action: {env.ACTION_SPACE[action]}")
+                action = agent.select_action(state)
+                next_state, reward, done = env.step(env.ACTION_SPACE[action])
 
-        env.state.cube = env.states[episode]  # Set the state for the next episode
+                next_state = next_state.get_flattened_state()
+                agent.train()
+                total_reward += reward
+                env.set_state(next_state)
+                env.move_counter += 1  # Increment move counter after each action
 
-        if episode % TARGET_UPDATE_FREQUENCY == 0:
-            agent.update_target_network()
+                print(f"Action: {env.ACTION_SPACE[action]}")
 
-        print(f"Episode: {episode}, Total Reward: {total_reward}")
-        env.sugoi_rewards += total_reward;
+            if(not done):
+                env.state.cube = copy.deepcopy(env.states[episode])  # Set the state for the next episode
+
+            if episode % TARGET_UPDATE_FREQUENCY == 0:
+                agent.update_target_network()
+
+            print(f"Episode: {episode}, Total Reward: {total_reward}")
+            env.sugoi_rewards += total_reward;
+        if episode % 50 == 0:
+            torch.save(agent.q_network.state_dict(), f'models/trained_model_episode_{episode}.pth')
+            print(f"Model saved at episode {episode}.")
+            time.sleep(1)  # Pause execution for 1 second
+
+        # Log the saving time and total rewards
+        current_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+        log_message = f"Episode {episode} - Saved model at {current_time}, Total Reward: {env.sugoi_rewards}"
+        logging.info(log_message)
+        logging.info(f"Cube initial state: {env.states[episode]}")
+        logging.info(f"Cube final state: {env.state.cube} .")
 
     print(f"Total Sugoi Rewards: {env.sugoi_rewards}")
     print(f"Solved: {env.solved}")
 
-    env.states = preprocess_data(f"new_data/18to22/file({n+30}).csv")
+    env.states = preprocess_data(f"new_data/18to22/File({n+30}).csv")
 
-torch.save(agent.q_network.state_dict(), 'trained_model.pth')
 
 # Evaluate the agent
 # (You can implement a separate evaluation loop to measure the agent's performance)
