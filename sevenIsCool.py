@@ -313,7 +313,7 @@ class RubiksCubeEnvironment:
         self.max_moves = 10
         self.solved = 0
         self.previous_moves = []
-        self.stoped_at_episode = 51
+        self.stoped_at_episode = 0
         self.stoped_at_n = 1
 
         self.sugoi_rewards = 0
@@ -338,7 +338,7 @@ class RubiksCubeEnvironment:
     def _calculate_reward(self):
         if self._is_solved():
             self.solved += 1;
-            return 1_000_000
+            return 10_000
         elif self.move_counter == self.max_moves:
             return -50
         else:
@@ -473,6 +473,10 @@ env.max_moves = 20  # Set your maximum limit
 logging.basicConfig(filename='training_log.txt', level=logging.INFO, format='%(message)s')
 start_from_n = env.stoped_at_n;
 
+current_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+log_message = f", {current_time},"
+logging.info(log_message)
+
 for n in range(start_from_n, 10):
     start_from = env.stoped_at_episode
     for episode in range(start_from, 10_000):
@@ -511,10 +515,8 @@ for n in range(start_from_n, 10):
 
         # Log the saving time and total rewards
         current_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-        log_message = f"Episode {episode} - Saved model at {current_time}, Total Reward: {env.sugoi_rewards}"
+        log_message = f"{episode}, {current_time}, {env.sugoi_rewards}"
         logging.info(log_message)
-        logging.info(f"Cube initial state: {env.states[episode]}")
-        logging.info(f"Cube final state: {env.state.cube} .")
 
     print(f"Total Sugoi Rewards: {env.sugoi_rewards}")
     print(f"Solved: {env.solved}")
