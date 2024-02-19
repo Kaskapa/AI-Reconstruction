@@ -313,7 +313,7 @@ class RubiksCubeEnvironment:
         self.max_moves = 10
         self.solved = 0
         self.previous_moves = []
-        self.stoped_at_episode = 201
+        self.stoped_at_episode = 251
         self.stoped_at_n = 1
 
         self.sugoi_rewards = 0
@@ -454,7 +454,7 @@ env = RubiksCubeEnvironment(file_path="new_data/18to22/File(30).csv")
 input_size = 6*3*3  # Size of flattened Rubik's Cube state
 output_size = len(env.ACTION_SPACE)  # Number of possible actions
 
-model_path = 'models/trained_model_episode_200.pth'
+model_path = 'models/trained_model_episode_250.pth'
 
 agent = DQNAgent(input_size, output_size)
 if os.path.isfile(model_path):
