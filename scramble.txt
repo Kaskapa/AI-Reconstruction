@@ -12193,4 +12193,3 @@ L R2' F D L2'
 R2 F' L2 D2 F2 U2 B' L2 F R2 D2 F2 D L' U B R' F' R D R2 U2
 z y2
 U' R' r' L'
-
