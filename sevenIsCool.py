@@ -13,6 +13,7 @@ import os
 import time
 import logging
 import copy
+import torch.nn.functional as F
 
 # Preprocess the data
 def preprocess_data(file_path):
@@ -313,22 +314,18 @@ class RubiksCubeEnvironment:
         self.max_moves = 10
         self.solved = 0
         self.previous_moves = []
-        self.stoped_at_episode = 251
+        self.stoped_at_episode = 0
         self.stoped_at_n = 1
 
         self.sugoi_rewards = 0
 
     def step(self, action):
         # Perform the action on the cube (e.g., rotate a face)
+        self.previous_moves.append(action)
         self.state = turnCube(action, self.state)
 
         # Calculate the reward based on the current state
         self.reward = self._calculate_reward()
-
-        if self._is_redundant_move(action):
-            # Penalize the agent and return the current state and a negative reward
-            self.reward = -10
-            return self.state, self.reward, False
 
         # Check if the goal state is reached
         done = self._is_solved()
@@ -337,68 +334,112 @@ class RubiksCubeEnvironment:
 
     def _calculate_reward(self):
         if self._is_solved():
-            self.solved += 1;
+            self.solved += 1
             return 10_000
         elif self.move_counter == self.max_moves:
-            return -50
-        else:
+            return 0
+        elif self._is_redundant_move(self.previous_moves[-1]):
             return -1
+        else:
+            return 0
 
     def _is_solved(self):
         return self.state.is_white_cross_solved()
-
-    def reset(self):
-        self.state.reset()
 
     def set_state(self, state_array):
         self.state.cube = state_array.reshape(6, 3, 3)
 
     #stoped here!
     def _is_redundant_move(self, action):
-        # Check if the new move cancels out the effect of the last move(s) in the history
-        if len(self.previous_moves) >= 2:
+        if len(self.previous_moves) >= 3:
             last_move = self.previous_moves[-1]
             second_last_move = self.previous_moves[-2]
+            third_last_move = self.previous_moves[-3]
 
-            # Check if the new move and the last move cancel each other out
-            if action + "'" == last_move and action[:-1] == second_last_move:
-                return True
-            elif action[:-1] == last_move and action + "'" == second_last_move:
+            # Check if the last 3 moves are identical
+            if action == last_move == second_last_move == third_last_move:
                 return True
 
         return False
 
 # Define the Q-network architecture
-class QNetwork(nn.Module):
-    def __init__(self, input_size, output_size):
-        super(QNetwork, self).__init__()
-        self.fc1 = nn.Linear(input_size, 64)
+class DuelingQNetwork(nn.Module):
+    def __init__(self, state_size, action_size, seed):
+        super(DuelingQNetwork, self).__init__()
+        self.seed = torch.manual_seed(seed)
+        self.fc1 = nn.Linear(state_size, 64)
         self.fc2 = nn.Linear(64, 64)
-        self.fc3 = nn.Linear(64, output_size)
+        self.fc3_adv = nn.Linear(64, action_size)  # Advantage stream
+        self.fc3_val = nn.Linear(64, 1)           # Value stream
 
     def forward(self, x):
-        x = torch.relu(self.fc1(x))
-        x = torch.relu(self.fc2(x))
-        x = self.fc3(x)
-        return x
+        state_tensor = torch.tensor(state, dtype=torch.float32)
+        # Now you can pass state_tensor to your network
+        x = F.relu(self.fc1(state_tensor))
+        x = F.relu(self.fc2(x))
+        adv = F.relu(self.fc3_adv(x))
+        val = self.fc3_val(x)
+        return val + adv - adv.mean()
+
 
 # Define the DQN agent
-class DQNAgent:
-    def __init__(self, input_size, output_size, learning_rate=0.001, gamma=0.99, epsilon=1.0, epsilon_decay=0.995, epsilon_min=0.01, buffer_size=10000, batch_size=32):
-        self.q_network = QNetwork(input_size, output_size)
-        self.target_network = QNetwork(input_size, output_size)
-        self.target_network.load_state_dict(self.q_network.state_dict())  # Initialize target network with same weights
-        self.optimizer = optim.Adam(self.q_network.parameters(), lr=learning_rate)
-        self.gamma = gamma  # Discount factor
-        self.epsilon = epsilon  # Exploration rate
-        self.epsilon_decay = epsilon_decay  # Decay rate for exploration rate
-        self.epsilon_min = epsilon_min  # Minimum exploration rate
+class DuelingDQNAgent:
+    def __init__(self, input_size, output_size,seed = None, learning_rate=0.001, gamma=0.99, epsilon=1.0, epsilon_decay=0.999, epsilon_min=0.01, buffer_size=10000, batch_size=32, weight_decay=0.01):
+        self.q_network = DuelingQNetwork(input_size, output_size, seed)
+        self.target_network = DuelingQNetwork(input_size, output_size, seed)
+        self.target_network.load_state_dict(self.q_network.state_dict())
+        self.optimizer = optim.Adam(self.q_network.parameters(), lr=learning_rate, weight_decay=weight_decay)
+        self.gamma = gamma
+        self.epsilon = epsilon  # Initialize epsilon
+        self.epsilon_decay = epsilon_decay
+        self.epsilon_min = epsilon_min
         self.input_size = input_size
         self.output_size = output_size
+        self.buffer_size = buffer_size
+        self.batch_size = batch_size
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.replay_buffer = deque(maxlen=self.buffer_size)
 
-        self.buffer_size = buffer_size  # Replay buffer size
-        self.batch_size = batch_size    # Mini-batch size
-        self.replay_buffer = deque(maxlen=self.buffer_size)  # Replay buffer
+    def train(self):
+        if len(self.replay_buffer) < self.batch_size:
+            return
+
+        states, actions, rewards, next_states, dones = self.sample_mini_batch()
+
+        states_tensor = torch.tensor(states, dtype=torch.float32).to(self.device)
+        next_states_tensor = torch.tensor(next_states, dtype=torch.float32).to(self.device)
+        actions_tensor = torch.tensor(actions, dtype=torch.long).unsqueeze(-1).to(self.device)
+        rewards_tensor = torch.tensor(rewards, dtype=torch.float32).unsqueeze(-1).to(self.device)
+        dones_tensor = torch.tensor(dones, dtype=torch.float32).unsqueeze(-1).to(self.device)
+
+        q_values = self.q_network(states_tensor)
+        next_q_values = self.target_network(next_states_tensor)
+
+        max_next_q_values = next_q_values.detach().max(-1)[0].unsqueeze(-1)
+        target_q_values = rewards_tensor + (self.gamma * max_next_q_values * (1 - dones_tensor))
+
+        current_q_values = q_values.gather(0, actions_tensor.squeeze())
+
+        loss = nn.MSELoss()(current_q_values, target_q_values)
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
+
+        # Decay epsilon
+        self.epsilon = max(self.epsilon * self.epsilon_decay, self.epsilon_min)
+
+
+
+    def select_action(self, state):
+        if np.random.rand() < self.epsilon:  # Explore with probability epsilon
+            return np.random.randint(self.output_size)
+        else:
+            with torch.no_grad():
+                q_values = self.q_network(torch.tensor(state, dtype=torch.float32))
+                return torch.argmax(q_values).item()
+
+    def update_target_network(self):
+        self.target_network.load_state_dict(self.q_network.state_dict())
 
     def store_experience(self, state, action, reward, next_state, done):
         self.replay_buffer.append((state, action, reward, next_state, done))
@@ -408,45 +449,6 @@ class DQNAgent:
         states, actions, rewards, next_states, dones = zip(*mini_batch)
         return states, actions, rewards, next_states, dones
 
-    def select_action(self, state):
-        if np.random.rand() < self.epsilon:
-            return np.random.randint(self.output_size)  # Explore
-        else:
-            with torch.no_grad():
-                q_values = self.q_network(torch.tensor(state, dtype=torch.float32))
-                return torch.argmax(q_values).item()  # Exploit
-
-    def train(self):
-        if len(self.replay_buffer) < self.batch_size:
-            return  # Not enough samples in the replay buffer
-
-        states, actions, rewards, next_states, dones = self.sample_mini_batch()
-
-        # Convert to tensors
-        states_tensor = torch.tensor(states, dtype=torch.float32)
-        next_states_tensor = torch.tensor(next_states, dtype=torch.float32)
-        actions_tensor = torch.tensor(actions, dtype=torch.long)
-        rewards_tensor = torch.tensor(rewards, dtype=torch.float32)
-        dones_tensor = torch.tensor(dones, dtype=torch.float32)
-
-        # Calculate target Q-values
-        with torch.no_grad():
-            target_q_values = rewards_tensor + (1 - dones_tensor) * self.gamma * torch.max(self.target_network(next_states_tensor), dim=1).values
-
-        # Calculate current Q-values
-        q_values = self.q_network(states_tensor)
-        current_q_values = q_values.gather(1, actions_tensor.unsqueeze(1)).squeeze()
-
-        # Update Q-values using Bellman equation
-        loss = nn.MSELoss()(current_q_values, target_q_values)
-        self.optimizer.zero_grad()
-        loss.backward()
-        self.optimizer.step()
-
-    def update_target_network(self):
-        self.target_network.load_state_dict(self.q_network.state_dict())
-
-
 # Create environment
 env = RubiksCubeEnvironment(file_path="new_data/18to22/File(30).csv")
 
@@ -454,9 +456,9 @@ env = RubiksCubeEnvironment(file_path="new_data/18to22/File(30).csv")
 input_size = 6*3*3  # Size of flattened Rubik's Cube state
 output_size = len(env.ACTION_SPACE)  # Number of possible actions
 
-model_path = 'models/trained_model_episode_250.pth'
+model_path = 'modelsD/trained_model_episode_50.pth'
 
-agent = DQNAgent(input_size, output_size)
+agent = DuelingDQNAgent(input_size, output_size, seed=42)
 if os.path.isfile(model_path):
     # Load the model
     agent.q_network.load_state_dict(torch.load(model_path))
@@ -469,12 +471,12 @@ else:
 TARGET_UPDATE_FREQUENCY = 100
 
 # Training loop
-env.max_moves = 20  # Set your maximum limit
-logging.basicConfig(filename='training_log.txt', level=logging.INFO, format='%(message)s')
+env.max_moves = 12  # Set your maximum limit
+logging.basicConfig(filename='training_logD.txt', level=logging.INFO, format='%(message)s')
 start_from_n = env.stoped_at_n;
 
 current_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-log_message = f", {current_time},"
+log_message = f",{current_time},"
 logging.info(log_message)
 
 for n in range(start_from_n, 10):
@@ -493,11 +495,14 @@ for n in range(start_from_n, 10):
                 next_state, reward, done = env.step(env.ACTION_SPACE[action])
 
                 next_state = next_state.get_flattened_state()
+
+                # Store the experience in the replay buffer
+                agent.store_experience(state, action, reward, next_state, done)
+
                 agent.train()
                 total_reward += reward
                 env.set_state(next_state)
                 env.move_counter += 1  # Increment move counter after each action
-
                 print(f"Action: {env.ACTION_SPACE[action]}")
 
             if(not done):
@@ -509,7 +514,7 @@ for n in range(start_from_n, 10):
             print(f"Episode: {episode}, Total Reward: {total_reward}")
             env.sugoi_rewards += total_reward;
         if episode % 50 == 0:
-            torch.save(agent.q_network.state_dict(), f'models/trained_model_episode_{episode}.pth')
+            torch.save(agent.q_network.state_dict(), f'modelsD/trained_model_episode_{episode}.pth')
             print(f"Model saved at episode {episode}.")
             time.sleep(1)  # Pause execution for 1 second
 
