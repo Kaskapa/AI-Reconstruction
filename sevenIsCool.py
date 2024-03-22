@@ -14,6 +14,7 @@ import time
 import logging
 import copy
 import torch.nn.functional as F
+from cube import Cube
 
 # Preprocess the data
 def preprocess_data(file_path):
@@ -43,209 +44,6 @@ def preprocess_data(file_path):
     return state
 
 # 0 - White, 1 - Orange, 2 - Green, 3 - Red, 4 - Blue, 5 - Yellow
-
-class Cube:
-    def __init__(self):
-        self.cube = [
-            [[0, 0, 0],
-             [0, 0, 0],
-             [0, 0, 0]],
-
-            [[1, 1, 1],
-             [1, 1, 1],
-             [1, 1, 1]],
-
-            [[2, 2, 2],
-             [2, 2, 2],
-             [2, 2, 2]],
-
-            [[3, 3, 3],
-             [3, 3, 3],
-             [3, 3, 3]],
-
-            [[4, 4, 4],
-             [4, 4, 4],
-             [4, 4, 4]],
-
-            [[5, 5, 5],
-             [5, 5, 5],
-             [5, 5, 5]]
-        ]
-
-    def reset(self):
-        self.cube = [
-            [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
-            [[1, 1, 1], [1, 1, 1], [1, 1, 1]],
-            [[2, 2, 2], [2, 2, 2], [2, 2, 2]],
-            [[3, 3, 3], [3, 3, 3], [3, 3, 3]],
-            [[4, 4, 4], [4, 4, 4], [4, 4, 4]],
-            [[5, 5, 5], [5, 5, 5], [5, 5, 5]]
-        ]
-
-    def is_white_cross_solved(self):
-        if(self.cube[0][0][1] == 0 and self.cube[0][1][0] == 0 and self.cube[0][1][2] == 0 and self.cube[0][2][1] == 0 and self.cube[0][1][1] == 0 and self.cube[1][0][1] == 1 and self.cube[2][0][1] == 2 and self.cube[3][0][1] == 3 and self.cube[4][0][1] == 4):
-            return True
-        else:
-            return False
-
-    def is_orange_cross_solved(self):
-        if(self.cube[1][0][1] == 1 and self.cube[1][1][0] == 1 and self.cube[1][1][2] == 1 and self.cube[1][2][1] == 1 and self.cube[1][1][1] == 1 and self.cube[0][0][1] == 0 and self.cube[2][0][1] == 2 and self.cube[3][0][1] == 3 and self.cube[5][0][1] == 5):
-            return True
-        else:
-            return False
-
-    def is_green_cross_solved(self):
-        if(self.cube[2][0][1] == 2 and self.cube[2][1][0] == 2 and self.cube[2][1][2] == 2 and self.cube[2][2][1] == 2 and self.cube[2][1][1] == 2 and self.cube[0][0][1] == 0 and self.cube[1][0][1] == 1 and self.cube[3][0][1] == 3 and self.cube[5][0][1] == 5):
-            return True
-        else:
-            return False
-
-    def is_red_cross_solved(self):
-        if(self.cube[3][0][1] == 3 and self.cube[3][1][0] == 3 and self.cube[3][1][2] == 3 and self.cube[3][2][1] == 3 and self.cube[3][1][1] == 3 and self.cube[0][0][1] == 0 and self.cube[1][0][1] == 1 and self.cube[2][0][1] == 2 and self.cube[5][0][1] == 5):
-            return True
-        else:
-            return False
-
-    def is_blue_cross_solved(self):
-        if(self.cube[4][0][1] == 4 and self.cube[4][1][0] == 4 and self.cube[4][1][2] == 4 and self.cube[4][2][1] == 4 and self.cube[4][1][1] == 4 and self.cube[0][0][1] == 0 and self.cube[1][0][1] == 1 and self.cube[2][0][1] == 2 and self.cube[3][0][1] == 3):
-            return True
-        else:
-            return False
-
-    def is_yellow_cross_solved(self):
-        if(self.cube[5][0][1] == 5 and self.cube[5][1][0] == 5 and self.cube[5][1][2] == 5 and self.cube[5][2][1] == 5 and self.cube[5][1][1] == 5 and self.cube[1][2][1] == 1 and self.cube[2][2][1] == 2 and self.cube[3][2][1] == 3 and self.cube[4][2][1] == 4):
-            return True
-        else:
-            return False
-
-    def right_turn(self):
-        temp = [[0]*3 for _ in range(4)]
-        for i in range(3):
-            temp[0][i] = self.cube[5][i][2]  # Yellow
-            temp[1][i] = self.cube[2][i][2]  # Green
-            temp[2][i] = self.cube[0][2 - i][2]  # White
-            temp[3][i] = self.cube[4][2 - i][0]  # Blue
-        for i in range(3):
-            self.cube[2][i][2] = temp[0][i]
-            self.cube[0][i][2] = temp[1][i]
-            self.cube[4][i][0] = temp[2][i]
-            self.cube[5][i][2] = temp[3][i]
-
-        temp = [[0]*3 for _ in range(3)]
-        for i in range(3):
-            for j in range(3):
-                temp[i][j] = self.cube[3][i][j]
-        for i in range(3):
-            for j in range(3):
-                self.cube[3][i][j] = temp[2 - j][i]
-
-    def left_turn(self):
-        temp = [[0]*3 for _ in range(4)]
-        for i in range(3):
-            temp[0][i] = self.cube[5][2-i][0]
-            temp[1][i] = self.cube[2][i][0]
-            temp[2][i] = self.cube[0][i][0]
-            temp[3][i] = self.cube[4][2- i][2]
-        for i in range(3):
-            self.cube[2][i][0] = temp[2][i]
-            self.cube[0][i][0] = temp[3][i]
-            self.cube[4][i][2] = temp[0][i]
-            self.cube[5][i][0] = temp[1][i]
-
-        temp = [[0]*3 for _ in range(3)]
-        for i in range(3):
-            for j in range(3):
-                temp[i][j] = self.cube[1][i][j]
-        for i in range(3):
-            for j in range(3):
-                self.cube[1][i][j] = temp[2-j][i]
-    def up_turn(self):
-        temp = [[0]*3 for _ in range(4)]
-        for i in range(3):
-            temp[0][i] = self.cube[1][0][i]
-            temp[1][i] = self.cube[2][0][i]
-            temp[2][i] = self.cube[3][0][i]
-            temp[3][i] = self.cube[4][0][i]
-        for i in range(3):
-            self.cube[1][0][i] = temp[1][i]
-            self.cube[2][0][i] = temp[2][i]
-            self.cube[3][0][i] = temp[3][i]
-            self.cube[4][0][i] = temp[0][i]
-
-        temp = [[0]*3 for _ in range(3)]
-        for i in range(3):
-            for j in range(3):
-                temp[i][j] = self.cube[0][i][j]
-        for i in range(3):
-            for j in range(3):
-                self.cube[0][i][j] = temp[2-j][i]
-
-    def down_turn(self):
-        temp = [[0]*3 for _ in range(4)]
-        for i in range(3):
-            temp[0][i] = self.cube[1][2][i]
-            temp[1][i] = self.cube[2][2][i]
-            temp[2][i] = self.cube[3][2][i]
-            temp[3][i] = self.cube[4][2][i]
-        for i in range(3):
-            self.cube[1][2][i] = temp[3][i]
-            self.cube[2][2][i] = temp[0][i]
-            self.cube[3][2][i] = temp[1][i]
-            self.cube[4][2][i] = temp[2][i]
-
-        temp = [[0]*3 for _ in range(3)]
-        for i in range(3):
-            for j in range(3):
-                temp[i][j] = self.cube[5][i][j]
-        for i in range(3):
-            for j in range(3):
-                self.cube[5][i][j] = temp[2-j][i]
-
-    def front_turn(self):
-        temp = [[0]*3 for _ in range(4)]
-        for i in range(3):
-            temp[0][i] = self.cube[1][i][2]
-            temp[1][i] = self.cube[0][2][i]
-            temp[2][i] = self.cube[3][i][0]
-            temp[3][i] = self.cube[5][0][i]
-        for i in range(3):
-            self.cube[1][i][2] = temp[3][i]
-            self.cube[0][2][i] = temp[0][2-i]
-            self.cube[3][i][0] = temp[1][i]
-            self.cube[5][0][i] = temp[2][2-i]
-
-        temp = [[0]*3 for _ in range(3)]
-        for i in range(3):
-            for j in range(3):
-                temp[i][j] = self.cube[2][i][j]
-        for i in range(3):
-            for j in range(3):
-                self.cube[2][i][j] = temp[2-j][i]
-
-    def back_turn(self):
-        temp = [[0]*3 for _ in range(4)]
-        for i in range(3):
-            temp[0][i] = self.cube[1][i][0]
-            temp[1][i] = self.cube[0][0][i]
-            temp[2][i] = self.cube[3][i][2]
-            temp[3][i] = self.cube[5][2][i]
-        for i in range(3):
-            self.cube[1][i][0] = temp[1][2-i]
-            self.cube[0][0][i] = temp[2][i]
-            self.cube[3][i][2] = temp[3][2-i]
-            self.cube[5][2][i] = temp[0][i]
-
-        temp = [[0]*3 for _ in range(3)]
-        for i in range(3):
-            for j in range(3):
-                temp[i][j] = self.cube[4][i][j]
-        for i in range(3):
-            for j in range(3):
-                self.cube[4][i][j] = temp[2-j][i]
-
-    def get_flattened_state(self):
-        return np.array(self.cube).flatten()
-
 def turnCube(move, cube):
     if move == "R":
         cube.right_turn()
@@ -301,6 +99,33 @@ def turnCube(move, cube):
     elif move == "B2":
         cube.back_turn()
         cube.back_turn()
+    elif move == "y":
+        cube.y_rotation()
+    elif move == "y'":
+        cube.y_rotation()
+        cube.y_rotation()
+        cube.y_rotation()
+    elif move == "x":
+        cube.x_rotation()
+    elif move == "x'":
+        cube.x_rotation()
+        cube.x_rotation()
+        cube.x_rotation()
+    elif move == "z":
+        cube.z_rotation()
+    elif move == "z'":
+        cube.z_rotation()
+        cube.z_rotation()
+        cube.z_rotation()
+    elif move == "y2":
+        cube.y_rotation()
+        cube.y_rotation()
+    elif move == "x2":
+        cube.x_rotation()
+        cube.x_rotation()
+    elif move == "z2":
+        cube.z_rotation()
+        cube.z_rotation()
     return cube
 
 class RubiksCubeEnvironment:
@@ -308,7 +133,7 @@ class RubiksCubeEnvironment:
         self.states = preprocess_data(file_path)
         self.state = Cube()  # Initialize with a solved Rubik's Cube
         self.state.cube = copy.deepcopy(self.states[0])
-        self.ACTION_SPACE = ["R", "R'", "L", "L'", "U", "U'", "D", "D'", "F", "F'", "B", "B'", "R2", "L2", "U2", "D2", "F2", "B2"]
+        self.ACTION_SPACE = ["R", "R'", "L", "L'", "U", "U'", "D", "D'", "F", "F'", "B", "B'", "R2", "L2", "U2", "D2", "F2", "B2", "y", "y'", "x", "x'", "z", "z'", "y2", "x2", "z2"]
         self.reward = 0
         self.move_counter = 0
         self.max_moves = 10
@@ -344,7 +169,7 @@ class RubiksCubeEnvironment:
             return 0
 
     def _is_solved(self):
-        return self.state.is_white_cross_solved()
+        return (self.state.is_back_cross_solved(0) or self.state.is_front_cross_solved(0) or self.state.is_right_cross_solved(0) or self.state.is_left_cross_solved(0) or self.state.is_up_cross_solved(0) or self.state.is_down_cross_solved(0))
 
     def set_state(self, state_array):
         self.state.cube = state_array.reshape(6, 3, 3)
