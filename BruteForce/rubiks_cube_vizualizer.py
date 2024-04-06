@@ -1,5 +1,5 @@
 import pygame
-from cube import Cube
+from rubiks_cube import Cube
 
 class RubiksCubeGameEnvironment:
     def __init__(self, screen):
@@ -103,6 +103,9 @@ class RubiksCubeGameEnvironment:
             self.handleEvent()
             self.draw()
             pygame.display.flip()
+
+
+
         pygame.quit()
 
 def main():

@@ -106,48 +106,48 @@ class Cube:
                 self.cube[4][2][1] == self.cube[4][1][1])
 
     def is_white_cross_solved(self):
-        for i in len(self.cube):
+        for i in range(len(self.cube)):
             if self.cube[i][1][1] == 0:
                 return self.switch(i)
 
     def is_orange_cross_solved(self):
-        for i in len(self.cube):
+        for i in range(len(self.cube)):
             if self.cube[i][1][1] == 1:
                 return self.switch(i)
 
     def is_green_cross_solved(self):
-        for i in len(self.cube):
+        for i in range(len(self.cube)):
             if self.cube[i][1][1] == 2:
                 return self.switch(i)
 
     def is_red_cross_solved(self):
-        for i in len(self.cube):
+        for i in range(len(self.cube)):
             if self.cube[i][1][1] == 3:
                 return self.switch(i)
 
     def is_blue_cross_solved(self):
-        for i in len(self.cube):
+        for i in range(len(self.cube)):
             if self.cube[i][1][1] == 4:
                 return self.switch(i)
 
     def is_yellow_cross_solved(self):
-        for i in len(self.cube):
+        for i in range(len(self.cube)):
             if self.cube[i][1][1] == 5:
                 return self.switch(i)
 
     def switch(self, i):
         if i == 0:
-            return self.is_up_cross_solved()
+            return self.is_up_cross_solved(i)
         elif i == 1:
-            return self.is_left_cross_solved()
+            return self.is_left_cross_solved(i)
         elif i == 2:
-            return self.is_front_cross_solved()
+            return self.is_front_cross_solved(i)
         elif i == 3:
-            return self.is_right_cross_solved()
+            return self.is_right_cross_solved(i)
         elif i == 4:
-            return self.is_back_cross_solved()
+            return self.is_back_cross_solved(i)
         elif i == 5:
-            return self.is_down_cross_solved()
+            return self.is_down_cross_solved(i)
 
     def y_rotation(self):
         temp = [[0]*3 for _ in range(3)]
