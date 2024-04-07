@@ -31,72 +31,78 @@ def preprocess_data(file_path):
 
 states = preprocess_data("new_data/18to22/file(30).csv")
 
+def do_moves(action):
+    if(action == "L"):
+        cube.left_turn()
+    elif(action == "L'"):
+        cube.left_turn()
+        cube.left_turn()
+        cube.left_turn()
+    elif(action == "L2"):
+        cube.left_turn()
+        cube.left_turn()
+    elif(action == "R"):
+       cube.right_turn()
+    elif(action == "R'"):
+        cube.right_turn()
+        cube.right_turn()
+        cube.right_turn()
+    elif(action == "R2"):
+        cube.right_turn()
+        cube.right_turn()
+    elif(action == "U"):
+       cube.up_turn()
+    elif(action == "U'"):
+        cube.up_turn()
+        cube.up_turn()
+        cube.up_turn()
+    elif(action == "U2"):
+        cube.up_turn()
+        cube.up_turn()
+    elif(action == "D"):
+       cube.down_turn()
+    elif(action == "D'"):
+        cube.down_turn()
+        cube.down_turn()
+        cube.down_turn()
+    elif(action == "D2"):
+        cube.down_turn()
+        cube.down_turn()
+    elif(action == "F"):
+       cube.front_turn()
+    elif(action == "F'"):
+        cube.front_turn()
+        cube.front_turn()
+        cube.front_turn()
+    elif(action == "F2"):
+        cube.front_turn()
+        cube.front_turn()
+    elif(action == "B"):
+       cube.back_turn()
+    elif(action == "B'"):
+        cube.back_turn()
+        cube.back_turn()
+        cube.back_turn()
+    elif(action == "B2"):
+        cube.back_turn()
+        cube.back_turn()
+
 MOVES = ["L", "L'", "L2", "R", "R'", "R2", "U", "U'", "U2", "D", "D'", "D2", "F", "F'", "F2", "B", "B'", "B2"];
 ALTERNATING = [["L", "R"], ["U", "D"], ["F", "B"]]
 cube = Cube()
-MAX_MOVES = 8
 
+MAX_MOVES = 8
 cube.cube = copy.deepcopy(states[0])
 
-def performe_move(action):
-    if(action == 0):
-        cube.left_turn()
-    elif(action == 1):
-        cube.left_turn()
-        cube.left_turn()
-        cube.left_turn()
-    elif(action == 2):
-        cube.left_turn()
-        cube.left_turn()
-    elif(action == 3):
-        cube.right_turn()
-    elif(action == 4):
-        cube.right_turn()
-        cube.right_turn()
-        cube.right_turn()
-    elif(action == 5):
-        cube.right_turn()
-        cube.right_turn()
-    elif(action == 6):
-        cube.up_turn()
-    elif(action == 7):
-        cube.up_turn()
-        cube.up_turn()
-        cube.up_turn()
-    elif(action == 8):
-        cube.up_turn()
-        cube.up_turn()
-    elif(action == 9):
-        cube.down_turn()
-    elif(action == 10):
-        cube.down_turn()
-        cube.down_turn()
-        cube.down_turn()
-    elif(action == 11):
-        cube.down_turn()
-        cube.down_turn()
-    elif(action == 12):
-        cube.front_turn()
-    elif(action == 13):
-        cube.front_turn()
-        cube.front_turn()
-        cube.front_turn()
-    elif(action == 14):
-        cube.front_turn()
-        cube.front_turn()
-    elif(action == 15):
-        cube.back_turn()
-    elif(action == 16):
-        cube.back_turn()
-        cube.back_turn()
-        cube.back_turn()
-    elif(action == 17):
-        cube.back_turn()
-        cube.back_turn()
-
 def backtrack(MOVES, res, tempList):
-    res.append(tempList)
-    print(tempList)
+    for move in tempList:
+        do_moves(move)
+
+    if cube.is_white_cross_solved():
+        res.append(tempList)
+        print(tempList)
+    cube.cube = copy.deepcopy(states[0])
+
     if(len(tempList) != MAX_MOVES):
         for i in range(len(MOVES)):
             shouldContinue = False
