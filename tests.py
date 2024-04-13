@@ -1,28 +1,51 @@
-prevmoves_old = ["F", "D2", "D2", "R'", "U", "F", "L'", "D", "F2", "U2", "B'", "L2", "D'", "B'", "R2", "D", "B", "U2", "R", "B'"]
-prevmoves = ["D", "U", "D2"]
-MOVES = ["U","U2", "U'", "D", "D2", "D'","R","R2","R'","L","L2","L'","F","F2","F'","B","B2","B'"]
-ALTERNATINGMOVES = [["R","L"], ["U","D"], ["F","B"]]
+import copy
 
 
-def _calculate_reward():
-        total_reward = 0
-        if(len(prevmoves) > 2 and prevmoves[-1][0] == prevmoves[-2][0] == prevmoves[-3][0]):
-            total_reward -= 10
+def findAllCombinations(arr, r):
+    ALTERNATING = [["L", "R"], ["U", "D"], ["F", "B"]]
+    combList = []
+    paths = []
 
-        elif(len(prevmoves) > 1 and prevmoves[-1][0] == prevmoves[-2][0]):
-            total_reward -=10
+    for i in arr:
+        list = []
+        list.append(i)
+        paths.append(list)
+        list = []
 
-        for moves in ALTERNATINGMOVES:
-            if(len(prevmoves) > 2
-               and ((prevmoves[-1][0] == moves[0]
-                     and prevmoves[-2][0] == moves[1]
-                     and prevmoves[-3][0] == moves[0])
-                    or (prevmoves[-1][0] == moves[1]
-                        and prevmoves[-2][0] == moves[0]
-                        and prevmoves[-3][0] == moves[1]))):
-                total_reward -= 10
+    while paths:
+        path = paths.pop(0)
 
-        return total_reward
+        for i in arr:
+            shouldContinue = False
+            for j in range(len(ALTERNATING)):
+                if(len(path) > 0 and (path[len(path)-1][0] == i[0])):
+                    shouldContinue = True
+                    break
+                elif(len(path) > 1 and (path[len(path)-1][0] == ALTERNATING[j][0][0] or path[len(path)-1][0] == ALTERNATING[j][1][0])
+                   and (i[0] == ALTERNATING[j][0][0] or i[0] == ALTERNATING[j][1][0]) and
+                   (path[len(path)-2][0] == ALTERNATING[j][0][0] or path[len(path)-2][0] == ALTERNATING[j][1][0])):
+                    shouldContinue = True
+                    break
 
-print (_calculate_reward())
+            if(shouldContinue):
+                continue
 
+            if(path not in combList):
+                combList.append(path)
+                print(path)
+
+            if(len(path) != r):
+                newPath = copy.deepcopy(path)
+                newPath.append(i)
+
+                if(newPath in combList):
+                    newPath = []
+                    continue
+
+                paths.append(newPath)
+                newPath = []
+
+
+MOVES = ["L", "L'", "L2", "R", "R'", "R2", "U", "U'", "U2", "D", "D'", "D2", "F", "F'", "F2", "B", "B'", "B2"]
+
+findAllCombinations(MOVES, 3)

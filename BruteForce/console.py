@@ -29,7 +29,7 @@ def preprocess_data(file_path):
 
     return state
 
-states = preprocess_data("new_data/18to22/file(30).csv")
+states = preprocess_data("/workspaces/AI-Reconstruction/new_data/18to22/File(30).csv")
 
 def do_moves(action):
     if(action == "L"):
@@ -98,9 +98,60 @@ def backtrack(MOVES, res, tempList):
     for move in tempList:
         do_moves(move)
 
-    if cube.is_white_cross_solved():
+    if(cube.is_white_cross_solved()):
+        print("white")
         res.append(tempList)
         print(tempList)
+        delimiter = " "
+        result_string = delimiter.join(tempList)
+        with open("soulutions(state[0]).txt", "a") as valid_file:
+            valid_file.write(result_string+"\n")
+
+    if(cube.is_red_cross_solved)():
+        print("red")
+        res.append(tempList)
+        print(tempList)
+        delimiter = " "
+        result_string = delimiter.join(tempList)
+        with open("soulutions(state[0]).txt", "a") as valid_file:
+            valid_file.write(result_string+"\n")
+
+    if(cube.is_blue_cross_solved()):
+        print("blue")
+        res.append(tempList)
+        print(tempList)
+        delimiter = " "
+        result_string = delimiter.join(tempList)
+        with open("soulutions(state[0]).txt", "a") as valid_file:
+            valid_file.write(result_string+"\n")
+    if(cube.is_green_cross_solved()):
+        print("green")
+        res.append(tempList)
+        print(tempList)
+        delimiter = " "
+        result_string = delimiter.join(tempList)
+        with open("soulutions(state[0]).txt", "a") as valid_file:
+            valid_file.write(result_string+"\n")
+
+    if(cube.is_orange_cross_solved()):
+        print("orange")
+        res.append(tempList)
+        print(tempList)
+        delimiter = " "
+        result_string = delimiter.join(tempList)
+        with open("soulutions(state[0]).txt", "a") as valid_file:
+            valid_file.write(result_string+"\n")
+
+    if(cube.is_yellow_cross_solved()):
+        print("yellow")
+        res.append(tempList)
+        print(tempList)
+        delimiter = " "
+        result_string = delimiter.join(tempList)
+        with open("soulutions(state[0]).txt", "a") as valid_file:
+            valid_file.write(result_string+"\n")
+
+
     cube.cube = copy.deepcopy(states[0])
 
     if(len(tempList) != MAX_MOVES):
