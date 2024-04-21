@@ -31,7 +31,7 @@ def preprocess_data(file_path):
 
     return state
 
-states = preprocess_data("/workspaces/AI-Reconstruction/new_data/18to22/File(30).csv")
+states = preprocess_data("new_data/18to22/File(30).csv")
 
 def do_moves(cube, action):
     if(action == "L"):
@@ -89,7 +89,7 @@ def do_moves(cube, action):
         cube.back_turn()
         cube.back_turn()
     return cube
-def path(paths):
+def path(paths, inWhich):
     cube = Cube()
     cube.cube = copy.deepcopy(states[0])
     r = 5
@@ -116,62 +116,12 @@ def path(paths):
                 continue
 
             if(path not in combList):
-                for move in path:
-                    cube = do_moves(cube, move)
-
-                if(cube.is_white_cross_solved()):
-                    print("white")
-                    combList.append(path)
-                    print(path)
-                    delimiter = " "
-                    result_string = delimiter.join(path)
-                    with open("soulutionsNew(state[0]).txt", "a") as valid_file:
-                        valid_file.write(result_string+"\n")
-
-                if(cube.is_red_cross_solved)():
-                    print("red")
-                    combList.append(path)
-                    print(path)
-                    delimiter = " "
-                    result_string = delimiter.join(path)
-                    with open("soulutionsNew(state[0]).txt", "a") as valid_file:
-                        valid_file.write(result_string+"\n")
-
-                if(cube.is_blue_cross_solved()):
-                    print("blue")
-                    combList.append(path)
-                    print(path)
-                    delimiter = " "
-                    result_string = delimiter.join(path)
-                    with open("soulutionsNew(state[0]).txt", "a") as valid_file:
-                        valid_file.write(result_string+"\n")
-                if(cube.is_green_cross_solved()):
-                    print("green")
-                    combList.append(path)
-                    print(path)
-                    delimiter = " "
-                    result_string = delimiter.join(path)
-                    with open("soulutionsNew(state[0]).txt", "a") as valid_file:
-                        valid_file.write(result_string+"\n")
-
-                if(cube.is_orange_cross_solved()):
-                    print("orange")
-                    combList.append(path)
-                    print(path)
-                    delimiter = " "
-                    result_string = delimiter.join(path)
-                    with open("soulutionsNew(state[0]).txt", "a") as valid_file:
-                        valid_file.write(result_string+"\n")
-
-                if(cube.is_yellow_cross_solved()):
-                    print("yellow")
-                    combList.append(path)
-                    print(path)
-                    delimiter = " "
-                    result_string = delimiter.join(path)
-                    with open("soulutionsNew(state[0]).txt", "a") as valid_file:
-                        valid_file.write(result_string+"\n")
-            cube.cube = copy.deepcopy(states[0])
+                combList.append(path)
+                print(path)
+                delimiter = " "
+                result_string = delimiter.join(path)
+                with open(f"SOLUTIONS/every_possible_solution{inWhich}.txt", "a") as valid_file:
+                    valid_file.write(result_string+"\n")
 
             if(len(path) != r):
                 newPath = copy.deepcopy(path)
@@ -188,24 +138,24 @@ def path(paths):
 
 if __name__ =="__main__":
     now = datetime.now()
-    t1 = threading.Thread(target=path, args=([["L"]],))
-    t2 = threading.Thread(target=path, args=([["L'"]],))
-    t3 = threading.Thread(target=path, args=([["L2"]],))
-    t4 = threading.Thread(target=path, args=([["R"]],))
-    t5 = threading.Thread(target=path, args=([["R'"]],))
-    t6 = threading.Thread(target=path, args=([["R2"]],))
-    t7 = threading.Thread(target=path, args=([["U"]],))
-    t8 = threading.Thread(target=path, args=([["U'"]],))
-    t9 = threading.Thread(target=path, args=([["U2"]],))
-    t10 = threading.Thread(target=path, args=([["D"]],))
-    t11 = threading.Thread(target=path, args=([["D'"]],))
-    t12 = threading.Thread(target=path, args=([["D2"]],))
-    t13 = threading.Thread(target=path, args=([["F"]],))
-    t14 = threading.Thread(target=path, args=([["F'"]],))
-    t15 = threading.Thread(target=path, args=([["F2"]],))
-    t16 = threading.Thread(target=path, args=([["B"]],))
-    t17 = threading.Thread(target=path, args=([["B'"]],))
-    t18 = threading.Thread(target=path, args=([["B2"]],))
+    t1 = threading.Thread(target=path, args=([["L"]],1))
+    t2 = threading.Thread(target=path, args=([["L'"]],2))
+    t3 = threading.Thread(target=path, args=([["L2"]],3))
+    t4 = threading.Thread(target=path, args=([["R"]],4))
+    t5 = threading.Thread(target=path, args=([["R'"]],5))
+    t6 = threading.Thread(target=path, args=([["R2"]],6))
+    t7 = threading.Thread(target=path, args=([["U"]],7))
+    t8 = threading.Thread(target=path, args=([["U'"]],8))
+    t9 = threading.Thread(target=path, args=([["U2"]],9))
+    t10 = threading.Thread(target=path, args=([["D"]],10))
+    t11 = threading.Thread(target=path, args=([["D'"]],11))
+    t12 = threading.Thread(target=path, args=([["D2"]],12))
+    t13 = threading.Thread(target=path, args=([["F"]],13))
+    t14 = threading.Thread(target=path, args=([["F'"]],14))
+    t15 = threading.Thread(target=path, args=([["F2"]],15))
+    t16 = threading.Thread(target=path, args=([["B"]],16))
+    t17 = threading.Thread(target=path, args=([["B'"]],17))
+    t18 = threading.Thread(target=path, args=([["B2"]],18))
 
 
     t1.start()
