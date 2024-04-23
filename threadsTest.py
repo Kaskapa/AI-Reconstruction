@@ -89,16 +89,15 @@ def do_moves(cube, action):
         cube.back_turn()
         cube.back_turn()
     return cube
-def path(paths, inWhich):
+def path(paths, inWhich, combList):
     cube = Cube()
     cube.cube = copy.deepcopy(states[0])
-    r = 5
+    r = 7
     arr = ["L", "L'", "L2", "R", "R'", "R2", "U", "U'", "U2", "D", "D'", "D2", "F", "F'", "F2", "B", "B'", "B2"]
     ALTERNATING = [["L", "R"], ["U", "D"], ["F", "B"]]
-    combList = []
 
     while paths:
-        path = paths.pop()
+        path = paths.pop(0)
 
         for i in arr:
             shouldContinue = False
@@ -133,29 +132,79 @@ def path(paths, inWhich):
 
                 paths.append(newPath)
                 newPath = []
+def fillOld(which):
+    with open(f"SOLUTIONS/every_possible_solution{which}.txt", 'r') as f:
+        combList = [line.strip().split() for line in f]
 
+    pathsMaxLength = len(combList[-1])-1
 
+    paths = []
+
+    for element in combList:
+        if len(element) == pathsMaxLength:
+            paths.append(element)
+
+    return combList, paths
+
+# arr = ["L", "L'", "L2", "R", "R'", "R2", "U", "U'", "U2", "D", "D'", "D2", "F", "F'", "F2", "B", "B'", "B2"]
 
 if __name__ =="__main__":
     now = datetime.now()
-    t1 = threading.Thread(target=path, args=([["L"]],1))
-    t2 = threading.Thread(target=path, args=([["L'"]],2))
-    t3 = threading.Thread(target=path, args=([["L2"]],3))
-    t4 = threading.Thread(target=path, args=([["R"]],4))
-    t5 = threading.Thread(target=path, args=([["R'"]],5))
-    t6 = threading.Thread(target=path, args=([["R2"]],6))
-    t7 = threading.Thread(target=path, args=([["U"]],7))
-    t8 = threading.Thread(target=path, args=([["U'"]],8))
-    t9 = threading.Thread(target=path, args=([["U2"]],9))
-    t10 = threading.Thread(target=path, args=([["D"]],10))
-    t11 = threading.Thread(target=path, args=([["D'"]],11))
-    t12 = threading.Thread(target=path, args=([["D2"]],12))
-    t13 = threading.Thread(target=path, args=([["F"]],13))
-    t14 = threading.Thread(target=path, args=([["F'"]],14))
-    t15 = threading.Thread(target=path, args=([["F2"]],15))
-    t16 = threading.Thread(target=path, args=([["B"]],16))
-    t17 = threading.Thread(target=path, args=([["B'"]],17))
-    t18 = threading.Thread(target=path, args=([["B2"]],18))
+    combList = []
+    paths = [["L"]]
+    # combList, paths = fillOld(1)
+    t1 = threading.Thread(target=path, args=(paths,1, combList))
+    paths = [["L'"]]
+    # combList, paths = fillOld(2)
+    t2 = threading.Thread(target=path, args=(paths,2, combList))
+    paths = [["L2"]]
+    # combList, paths = fillOld(3)
+    t3 = threading.Thread(target=path, args=(paths,3, combList))
+    paths = [["R"]]
+    # combList, paths = fillOld(4)
+    t4 = threading.Thread(target=path, args=(paths,4, combList))
+    paths = [["R'"]]
+    # combList, paths = fillOld(5)
+    t5 = threading.Thread(target=path, args=(paths,5, combList))
+    paths = [["R2"]]
+    # combList, paths = fillOld(6)
+    t6 = threading.Thread(target=path, args=(paths,6, combList))
+    paths = [["U"]]
+    # combList, paths = fillOld(7)
+    t7 = threading.Thread(target=path, args=(paths,7, combList))
+    paths = [["U'"]]
+    # combList, paths = fillOld(8)
+    t8 = threading.Thread(target=path, args=(paths,8, combList))
+    paths = [["U2"]]
+    # combList, paths = fillOld(9)
+    t9 = threading.Thread(target=path, args=(paths,9, combList))
+    paths = [["D"]]
+    # combList, paths = fillOld(10)
+    t10 = threading.Thread(target=path, args=(paths,10, combList))
+    paths = [["D'"]]
+    # combList, paths = fillOld(11)
+    t11 = threading.Thread(target=path, args=(paths,11, combList))
+    paths = [["D2"]]
+    # combList, paths = fillOld(12)
+    t12 = threading.Thread(target=path, args=(paths,12, combList))
+    paths = [["F"]]
+    # combList, paths = fillOld(13)
+    t13 = threading.Thread(target=path, args=(paths,13, combList))
+    paths = [["F'"]]
+    # combList, paths = fillOld(14)
+    t14 = threading.Thread(target=path, args=(paths,14, combList))
+    paths = [["F2"]]
+    # combList, paths = fillOld(15)
+    t15 = threading.Thread(target=path, args=(paths,15, combList))
+    paths = [["B"]]
+    # combList, paths = fillOld(16)
+    t16 = threading.Thread(target=path, args=(paths,16, combList))
+    paths = [["B'"]]
+    # combList, paths = fillOld(17)
+    t17 = threading.Thread(target=path, args=(paths,17, combList))
+    paths = [["B2"]]
+    # combList, paths = fillOld(18)
+    t18 = threading.Thread(target=path, args=(paths,18, combList))
 
 
     t1.start()
