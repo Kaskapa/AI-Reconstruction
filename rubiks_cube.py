@@ -1,5 +1,4 @@
 import copy
-import numpy as np
 
 class Cube:
     def __init__(self):
@@ -366,5 +365,3 @@ class Cube:
             for j in range(3):
                 self.cube[4][i][j] = copy.deepcopy(temp[2-j][i])
 
-    def get_flattened_state(self):
-        return np.array(self.cube).flatten()
