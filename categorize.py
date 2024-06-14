@@ -1,6 +1,9 @@
 from rubiks_cube import Cube
 from datetime import datetime
 import copy
+import time
+import threading
+
 
 def fillOld(which):
     with open(f"SOLUTIONS/every_possible_solution{which}.txt", 'r') as f:
@@ -8,58 +11,74 @@ def fillOld(which):
         for line in f:
             line = line.replace("\n", "")
             lineArr = line.split(" ")
-            lineArr.reverse();
+            lineArr.reverse()
             cube = Cube(1)
 
             for move in lineArr:
                 cube = do_alternative_moves(cube, move)
 
-            if(i == 48790):
-                saveCube = [];
-                sum = 0
-                print(lineArr)
-                j = 0
-                for face in cube.cube:
-                    for row in face:
-                        if 0 in row:
-                            if j >= 0 and j <= 2:
-                                saveCube.append(1)
-                            elif j == 3 or j == 6 or j == 9 or j == 12:
-                                saveCube.append(2)
-                            elif j == 4 or j == 7 or j == 10 or j == 13:
-                                saveCube.append(3)
-                            elif j == 5 or j == 8 or j == 11 or j == 14:
-                                saveCube.append(4)
-                            elif j >= 15 and j <= 17:
-                                saveCube.append(4)
-                        j+=1
-                saveCube.sort()
-                print(saveCube)
-
-            saveCube2 = []
-            if i > 48790:
-                j = 0
-                for face in cube.cube:
-                    for row in face:
-                        if 0 in row:
-                            if j >= 0 and j <= 2:
-                                saveCube2.append(1)
-                            elif j == 3 or j == 6 or j == 9 or j == 12:
-                                saveCube2.append(2)
-                            elif j == 4 or j == 7 or j == 10 or j == 13:
-                                saveCube2.append(3)
-                            elif j == 5 or j == 8 or j == 11 or j == 14:
-                                saveCube2.append(4)
-                            elif j >= 15 and j <= 17:
-                                saveCube2.append(4)
-                        j+=1
-                saveCube2.sort()
-
-            if  i > 48790 and saveCube2 == saveCube:
-                sum+=1
-
-            i += 1
-    print(sum)
+            saveCube = [0,0,0,0]
+            for face in range(len(cube.cube)):
+                for row in range(len(cube.cube[face])):
+                    for i in range(len(cube.cube[face][row])):
+                        if 0 == cube.cube[face][row][i]:
+                            if face == 0:
+                                if row == 0:
+                                    saveCube[cube.cube[4][0][1] - 1] = 11
+                                if row == 1 and i == 0:
+                                    saveCube[cube.cube[1][0][1] - 1] = 10
+                                if row == 1 and i == 2:
+                                    saveCube[cube.cube[3][0][1] - 1] = 12
+                                if row == 2:
+                                    saveCube[cube.cube[2][0][1] - 1] = 13
+                            if face == 1:
+                                if row == 0:
+                                    saveCube[cube.cube[0][1][0] - 1] = 21
+                                if row == 1 and i == 0:
+                                    saveCube[cube.cube[4][1][2] - 1] = 310
+                                if row == 1 and i == 2:
+                                    saveCube[cube.cube[2][1][0] - 1] = 312
+                                if row == 2:
+                                    saveCube[cube.cube[5][1][0] - 1] = 41
+                            if face == 2:
+                                if row == 0:
+                                    saveCube[cube.cube[0][2][1] - 1] = 22
+                                if row == 1 and i == 0:
+                                    saveCube[cube.cube[1][1][2] - 1] = 320
+                                if row == 1 and i == 2:
+                                    saveCube[cube.cube[3][1][0] - 1] = 322
+                                if row == 2:
+                                    saveCube[cube.cube[5][0][1] - 1] = 42
+                            if face == 3:
+                                if row == 0:
+                                    saveCube[cube.cube[0][1][2] - 1] = 23
+                                if row == 1 and i == 0:
+                                    saveCube[cube.cube[2][1][2] - 1] = 330
+                                if row == 1 and i == 2:
+                                    saveCube[cube.cube[4][1][0] - 1] = 332
+                                if row == 2:
+                                    saveCube[cube.cube[5][1][2] - 1] = 43
+                            if face == 4:
+                                if row == 0:
+                                    saveCube[cube.cube[0][0][1] - 1] = 24
+                                if row == 1 and i == 0:
+                                    saveCube[cube.cube[3][1][2] - 1] = 340
+                                if row == 1 and i == 2:
+                                    saveCube[cube.cube[1][1][0] - 1] = 342
+                                if row == 2:
+                                    saveCube[cube.cube[5][2][1] - 1] = 44
+                            if face == 5:
+                                if row == 0:
+                                    saveCube[cube.cube[2][2][1] - 1] = 51
+                                if row == 1 and i == 0:
+                                    saveCube[cube.cube[1][2][1] - 1] = 50
+                                if row == 1 and i == 2:
+                                    saveCube[cube.cube[3][2][1] - 1] = 52
+                                if row == 2:
+                                    saveCube[cube.cube[4][2][1] - 1] = 53
+            
+            with open(f"CATEGORY2/category_{saveCube}.txt", "a") as valid_file:
+                valid_file.write(line+"\n")
 
 
 
@@ -178,7 +197,64 @@ def do_alternative_moves(cube, action):
 
 
 now = datetime.now()
-fillOld(1);
+t1 = threading.Thread(target=fillOld, args=[1])
+t2 = threading.Thread(target=fillOld, args=[2])
+t3 = threading.Thread(target=fillOld, args=[3])
+t4 = threading.Thread(target=fillOld, args=[4])
+t5 = threading.Thread(target=fillOld, args=[5])
+t6 = threading.Thread(target=fillOld, args=[6])
+t7 = threading.Thread(target=fillOld, args=[7])
+t8 = threading.Thread(target=fillOld, args=[8])
+t9 = threading.Thread(target=fillOld, args=[9])
+t10 = threading.Thread(target=fillOld, args=[10])
+t11 = threading.Thread(target=fillOld, args=[11])
+t12 = threading.Thread(target=fillOld, args=[12])
+t13 = threading.Thread(target=fillOld, args=[13])
+t14 = threading.Thread(target=fillOld, args=[14])
+t15 = threading.Thread(target=fillOld, args=[15])
+t16 = threading.Thread(target=fillOld, args=[16])
+t17 = threading.Thread(target=fillOld, args=[17])
+t18 = threading.Thread(target=fillOld, args=[18])
+
+
+t1.start()
+t2.start()
+t3.start()
+t4.start()
+t5.start()
+t6.start()
+t7.start()
+t8.start()
+t9.start()
+t10.start()
+t11.start()
+t12.start()
+t13.start()
+t14.start()
+t15.start()
+t16.start()
+t17.start()
+t18.start()
+
+t1.join()
+t2.join()
+t3.join()
+t4.join()
+t5.join()
+t6.join()
+t7.join()
+t8.join()
+t9.join()
+t10.join()
+t11.join()
+t12.join()
+t13.join()
+t14.join()
+t15.join()
+t16.join()
+t17.join()
+t18.join()
+
 end = datetime.now()
 howLOng = end-now
 print("Done!")

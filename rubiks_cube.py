@@ -2,6 +2,7 @@ import copy
 
 class Cube:
     def __init__(self, type):
+        self.cateogry = [0,0,0,0]
         if(type == 0):
             self.cube = [
                 [[0, 0, 0],
@@ -38,16 +39,16 @@ class Cube:
                 [-1, 1, -1],
                 [-1, -1, -1]],
 
-                [[-1, -1, -1],
-                [-1, -1, -1],
+                [[-1, 2, -1],
+                [-1, 2, -1],
                 [-1, -1, -1]],
 
-                [[-1, -1, -1],
-                [-1, -1, -1],
+                [[-1, 3, -1],
+                [-1, 3, -1],
                 [-1, -1, -1]],
 
-                [[-1, -1, -1],
-                [-1, -1, -1],
+                [[-1, 4, -1],
+                [-1, 4, -1],
                 [-1, -1, -1]],
 
                 [[-1, -1, -1],
@@ -393,3 +394,177 @@ class Cube:
             for j in range(3):
                 self.cube[4][i][j] = copy.deepcopy(temp[2-j][i])
 
+    def do_moves(self, action):
+        if(action == "L"):
+            self.left_turn()
+        elif(action == "L'"):
+            self.left_turn()
+            self.left_turn()
+            self.left_turn()
+        elif(action == "L2"):
+            self.left_turn()
+            self.left_turn()
+        elif(action == "R"):
+            self.right_turn()
+        elif(action == "R'"):
+            self.right_turn()
+            self.right_turn()
+            self.right_turn()
+        elif(action == "R2"):
+            self.right_turn()
+            self.right_turn()
+        elif(action == "U"):
+            self.up_turn()
+        elif(action == "U'"):
+            self.up_turn()
+            self.up_turn()
+            self.up_turn()
+        elif(action == "U2"):
+            self.up_turn()
+            self.up_turn()
+        elif(action == "D"):
+            self.down_turn()
+        elif(action == "D'"):
+            self.down_turn()
+            self.down_turn()
+            self.down_turn()
+        elif(action == "D2"):
+            self.down_turn()
+            self.down_turn()
+        elif(action == "F"):
+            self.front_turn()
+        elif(action == "F'"):
+            self.front_turn()
+            self.front_turn()
+            self.front_turn()
+        elif(action == "F2"):
+            self.front_turn()
+            self.front_turn()
+        elif(action == "B"):
+            self.back_turn()
+        elif(action == "B'"):
+            self.back_turn()
+            self.back_turn()
+            self.back_turn()
+        elif(action == "B2"):
+            self.back_turn()
+            self.back_turn()
+        return self
+    def do_alternative_moves(self, action):
+        if(action == "L'"):
+            self.left_turn()
+        elif(action == "L"):
+            self.left_turn()
+            self.left_turn()
+            self.left_turn()
+        elif(action == "L2"):
+            self.left_turn()
+            self.left_turn()
+        elif(action == "R'"):
+            self.right_turn()
+        elif(action == "R"):
+            self.right_turn()
+            self.right_turn()
+            self.right_turn()
+        elif(action == "R2"):
+            self.right_turn()
+            self.right_turn()
+        elif(action == "U'"):
+            self.up_turn()
+        elif(action == "U"):
+            self.up_turn()
+            self.up_turn()
+            self.up_turn()
+        elif(action == "U2"):
+            self.up_turn()
+            self.up_turn()
+        elif(action == "D'"):
+            self.down_turn()
+        elif(action == "D"):
+            self.down_turn()
+            self.down_turn()
+            self.down_turn()
+        elif(action == "D2"):
+            self.down_turn()
+            self.down_turn()
+        elif(action == "F'"):
+            self.front_turn()
+        elif(action == "F"):
+            self.front_turn()
+            self.front_turn()
+            self.front_turn()
+        elif(action == "F2"):
+            self.front_turn()
+            self.front_turn()
+        elif(action == "B'"):
+            self.back_turn()
+        elif(action == "B"):
+            self.back_turn()
+            self.back_turn()
+            self.back_turn()
+        elif(action == "B2"):
+            self.back_turn()
+            self.back_turn()
+        return self
+    
+    def cateogrize(self):
+        saveCube = [0,0,0,0]
+        for face in range(len(self.cube)):
+            for row in range(len(self.cube[face])):
+                for i in range(len(self.cube[face][row])):
+                    if 0 == self.cube[face][row][i]:
+                        if face == 0:
+                            if row == 0:
+                                saveCube[self.cube[4][0][1] - 1] = 11
+                            if row == 1 and i == 0:
+                                saveCube[self.cube[1][0][1] - 1] = 10
+                            if row == 1 and i == 2:
+                                saveCube[self.cube[3][0][1] - 1] = 12
+                            if row == 2:
+                                saveCube[self.cube[2][0][1] - 1] = 13
+                        if face == 1:
+                            if row == 0:
+                                saveCube[self.cube[0][1][0] - 1] = 21
+                            if row == 1 and i == 0:
+                                saveCube[self.cube[4][1][2] - 1] = 310
+                            if row == 1 and i == 2:
+                                saveCube[self.cube[2][1][0] - 1] = 312
+                            if row == 2:
+                                saveCube[self.cube[5][1][0] - 1] = 41
+                        if face == 2:
+                            if row == 0:
+                                saveCube[self.cube[0][2][1] - 1] = 22
+                            if row == 1 and i == 0:
+                                saveCube[self.cube[1][1][2] - 1] = 320
+                            if row == 1 and i == 2:
+                                saveCube[self.cube[3][1][0] - 1] = 322
+                            if row == 2:
+                                saveCube[self.cube[5][0][1] - 1] = 42
+                        if face == 3:
+                            if row == 0:
+                                saveCube[self.cube[0][1][2] - 1] = 23
+                            if row == 1 and i == 0:
+                                saveCube[self.cube[2][1][2] - 1] = 330
+                            if row == 1 and i == 2:
+                                saveCube[self.cube[4][1][0] - 1] = 332
+                            if row == 2:
+                                saveCube[self.cube[5][1][2] - 1] = 43
+                        if face == 4:
+                            if row == 0:
+                                saveCube[self.cube[0][0][1] - 1] = 24
+                            if row == 1 and i == 0:
+                                saveCube[self.cube[3][1][2] - 1] = 340
+                            if row == 1 and i == 2:
+                                saveCube[self.cube[1][1][0] - 1] = 342
+                            if row == 2:
+                                saveCube[self.cube[5][2][1] - 1] = 44
+                        if face == 5:
+                            if row == 0:
+                                saveCube[self.cube[2][2][1] - 1] = 51
+                            if row == 1 and i == 0:
+                                saveCube[self.cube[1][2][1] - 1] = 50
+                            if row == 1 and i == 2:
+                                saveCube[self.cube[3][2][1] - 1] = 52
+                            if row == 2:
+                                saveCube[self.cube[4][2][1] - 1] = 53
+        self.cateogry = copy.deepcopy(saveCube)
