@@ -1,0 +1,24 @@
+F U B U2 L B'
+F L' B' U F B2 U2
+F L' B' U B2 F U2
+F L' B' D L2 U' B'
+F R2 U' L F' B' L'
+F R2 U' L B' F' L'
+F R2 U' L2 F' L' B'
+F R2 U' F' L B' L2
+F U F B U2 L B'
+F U F' B U2 L B'
+F U F2 B U2 L B'
+F U B R U2 L B'
+F U B R' U2 L B'
+F U B R2 U2 L B'
+F U B U2 L D B'
+F U B U2 L D' B'
+F U B U2 L D2 B'
+F U B U2 L B' D
+F U B U2 L B' D'
+F U B U2 L B' D2
+F U B F U2 L B'
+F U B F' U2 L B'
+F U B F2 U2 L B'
+U B U' F U' L B'

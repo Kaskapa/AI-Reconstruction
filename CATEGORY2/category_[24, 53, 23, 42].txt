@@ -1,0 +1,12 @@
+D' R B R U L B'
+B' R' B' U' F' R U'
+B R2 D' L F' R B'
+B R2 D' L F' B' R
+B R2 D' L B' F' R
+B R2 D' F' L R B'
+B R2 D' F' L B' R
+B R2 D' F' R L B'
+R' D' R2 B U L B'
+R D' B R2 U L B'
+D2 B R' F' U' L F'
+D2 B R' F' U' F' L

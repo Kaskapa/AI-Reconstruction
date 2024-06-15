@@ -1,0 +1,3 @@
+R B U' L R' F' U'
+R B U' R' L F' U'
+R B U' R' F' L U'

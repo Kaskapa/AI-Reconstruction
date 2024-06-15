@@ -1,0 +1,5 @@
+R D B' L R' F B2
+R D B' L R' B2 F
+R D B' L F R' B2
+R D B' R' L F B2
+R D B' R' L B2 F

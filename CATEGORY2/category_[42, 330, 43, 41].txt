@@ -1,0 +1,8 @@
+F L' F2 D R2 B R'
+L D' F' R D' B' L
+L D' F' D' R B' L
+L D' F' D' B' L R
+L D' F' D' B' R L
+L D2 B' D L F' R
+L D2 B' D F' L R
+L D2 B' D F' R L

@@ -1,0 +1,14 @@
+B' L B2 U' R' B L
+B R' D' F' B2 U B'
+B R' D' B2 F' U B'
+B R' D2 F' U B R2
+B R' F' U D2 B R2
+B R' F' U B D2 R2
+B R' F' U' L2 U2 B
+B R' F' D' B2 U B'
+B R' F' D2 U B R2
+L B R' F' U B R'
+L B2 U R' F' L' B
+L B2 U R' F' B L'
+L B2 U R' B F' L'
+L B2 U' R' B L F

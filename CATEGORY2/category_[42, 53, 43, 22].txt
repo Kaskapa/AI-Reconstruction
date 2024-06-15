@@ -1,0 +1,3 @@
+F R D L2 F' U' L
+D' F' L' R2 F U R'
+D' F' R2 L' F U R'

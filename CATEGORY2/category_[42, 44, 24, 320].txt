@@ -1,0 +1,2 @@
+U2 D' L' F U R F'
+D' U2 L' F U R F'
