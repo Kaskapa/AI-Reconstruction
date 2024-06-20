@@ -26,12 +26,12 @@ def findSol(min, max, cube, cubeCOPY, a):
         for line in range(max):
             line = f.readline()
             cube = copy.deepcopy(cubeCOPY)
-            
+
             lineArr = line.split(" ")
-            
+
             for i in lineArr:
                 cube.do_moves(i)
-            
+
             if(cube.is_white_cross_solved()):
                 print(a + line)
                 allSol.append(a + line)

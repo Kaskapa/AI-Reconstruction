@@ -3,6 +3,13 @@ import copy
 class Cube:
     def __init__(self, type):
         self.cateogry = [0,0,0,0]
+        self.corners = []
+        self.edges = []
+        self.pairs = []
+        self.CORNERTEMPLATE = [[[0,0], [1,0], [4,1]], [[0,1], [3,1], [4,0]], [[0,2], [1,1], [2,0]], [[0,3],[2,1], [3,0]], [[5,2], [1,2], [4,3]], [[5,3], [3,3], [4,2]], [[5,0], [1,3], [2,2]], [[5,1], [2,3], [3,2]]]
+        self.EDGETEMPLATE = [[[0,0], [4,0]], [[0,1], [1,0]], [[0,2],[3,0]], [[0,3], [2,0]], [[4,2], [1,1]], [[2,1], [1,2]], [[3,1], [2,2]], [[4,1], [3,2]], [[5,0], [2,3]], [[5,1], [1,3]], [[5,2], [3,3]], [[5,3], [4,3]]]
+        self.PAIRTEMPLATE = [[0,4],[1,7],[2, 5], [3,6], [4, 4], [5, 7], [6, 5], [7,6], [0,0], [2,3], [4, 11], [6,8], [1, 0], [3,3], [7, 8], [5, 11], [0, 1], [1, 2], [4, 9], [5, 10], [2, 1], [3,2], [6,9], [7, 10]]
+        self.CORRECTPAIRTEMPLATE = [[2,1], [2,1], [2,1], [2,1], [2,1], [2,1], [2,1], [2,1], [0, 2], [0,2], [0,2], [0,1], [0,2], [0,1], [0,1], [0,2], [0, 1], [0,1], [0,1], [0,1], [0,1], [0,2], [0,1], [0,2]];
         if(type == 0):
             self.cube = [
                 [[0, 0, 0],
@@ -207,15 +214,15 @@ class Cube:
 
     def x_rotation(self):
         temp = [[0]*3 for _ in range(3)]
+
+        temp = copy.deepcopy(self.cube[0])
+
+        self.cube[0] = copy.deepcopy(self.cube[2])
+        self.cube[2] = copy.deepcopy(self.cube[5])
         for i in range(3):
-            for j in range(3):
-                temp[i][j] = copy.deepcopy(self.cube[0][i][j])
+            self.cube[5][i] = copy.deepcopy(self.cube[4][2-i][::-1])
         for i in range(3):
-            for j in range(3):
-                self.cube[0][i][j] = copy.deepcopy(self.cube[2][i][j])
-                self.cube[2][i][j] = copy.deepcopy(self.cube[5][i][j])
-                self.cube[5][i][j] = copy.deepcopy(self.cube[4][2-i][2-j])
-                self.cube[4][i][j] = copy.deepcopy(temp[2-i][2-j])
+            self.cube[4][i] = copy.deepcopy(temp[2-i][::-1])
 
         temp = [[0]*3 for _ in range(3)]
         for i in range(3):
@@ -232,7 +239,6 @@ class Cube:
         for i in range(3):
             for j in range(3):
                 self.cube[3][i][j] = copy.deepcopy(temp[2-j][i])
-
 
     def z_rotation(self):
         temp = [[0]*3 for _ in range(3)]
@@ -310,6 +316,7 @@ class Cube:
         for i in range(3):
             for j in range(3):
                 self.cube[1][i][j] = copy.deepcopy(temp[2-j][i])
+
     def up_turn(self):
         temp = [[0]*3 for _ in range(4)]
         for i in range(3):
@@ -450,6 +457,7 @@ class Cube:
             self.back_turn()
             self.back_turn()
         return self
+
     def do_alternative_moves(self, action):
         if(action == "L'"):
             self.left_turn()
@@ -506,7 +514,7 @@ class Cube:
             self.back_turn()
             self.back_turn()
         return self
-    
+
     def cateogrize(self):
         saveCube = [0,0,0,0]
         for face in range(len(self.cube)):
@@ -568,3 +576,65 @@ class Cube:
                             if row == 2:
                                 saveCube[self.cube[4][2][1] - 1] = 53
         self.cateogry = copy.deepcopy(saveCube)
+
+    def put_corners_in_array(self):
+        corners_array_array = []
+        for face in range(len(self.cube)):
+            corners_array = []
+            for row in range(len(self.cube[face])):
+                for col in range(len(self.cube[face][row])):
+                    if (row == 0 or row == 2) and (col == 0 or col == 2):
+                        corners_array.append(self.cube[face][row][col])
+            corners_array_array.append(corners_array)
+        self.corners = corners_array_array
+
+    def get_corner(self, which):
+        cornerTuple = [self.corners[self.CORNERTEMPLATE[which][0][0]][self.CORNERTEMPLATE[which][0][1]], self.corners[self.CORNERTEMPLATE[which][1][0]][self.CORNERTEMPLATE[which][1][1]], self.corners[self.CORNERTEMPLATE[which][2][0]][self.CORNERTEMPLATE[which][2][1]]]
+        return cornerTuple
+
+    def put_edges_in_array(self):
+        edges_array_array = []
+        for face in range(len(self.cube)):
+            edges_array = []
+            for row in range(len(self.cube[face])):
+                for col in range(len(self.cube[face][row])):
+                    if (row == 0 or row == 2) and col == 1:
+                        edges_array.append(self.cube[face][row][col])
+                    if row == 1 and (col == 0 or col == 2):
+                        edges_array.append(self.cube[face][row][col])
+            edges_array_array.append(edges_array)
+        self.edges = edges_array_array
+
+    def get_edge(self, which):
+        edgeTuple = [self.edges[self.EDGETEMPLATE[which][0][0]][self.EDGETEMPLATE[which][0][1]], self.edges[self.EDGETEMPLATE[which][1][0]][self.EDGETEMPLATE[which][1][1]]]
+        return edgeTuple
+
+    def get_pair(self, which):
+        self.put_corners_in_array()
+        self.put_edges_in_array()
+        pairTuple = [self.get_corner(self.PAIRTEMPLATE[which][0]), self.get_edge(self.PAIRTEMPLATE[which][1])]
+        return pairTuple
+
+    def get_inserted_pairs(self):
+        self.put_corners_in_array()
+        self.put_edges_in_array()
+        correctlyInsertedPairs = []
+        for i in range(24):
+            if(self.is_pair_paired(i)):
+                pair = self.get_pair(i)
+                firstFaceToCheck = self.cube[self.CORNERTEMPLATE[self.PAIRTEMPLATE[i][0]][self.CORRECTPAIRTEMPLATE[i][0]][0]][1][1]
+                secondFaceToCheck = self.cube[self.CORNERTEMPLATE[self.PAIRTEMPLATE[i][0]][self.CORRECTPAIRTEMPLATE[i][1]][0]][1][1]
+
+                firstColorOfPair = pair[1][0]
+                secondColorOfPair = pair[1][1]
+
+                if((firstFaceToCheck == firstColorOfPair or secondFaceToCheck == firstColorOfPair) and (firstFaceToCheck == secondColorOfPair or secondFaceToCheck == secondColorOfPair)):
+                    # print (firstFaceToCheck, secondFaceToCheck)
+                    # print (pair[1][0], pair[1][1])
+                    correctlyInsertedPairs.append(i)
+        return correctlyInsertedPairs
+
+    def is_pair_paired(self, which):
+        if(self.get_pair(which)[0][self.CORRECTPAIRTEMPLATE[which][0]] == self.get_pair(which)[1][0] and self.get_pair(which)[0][self.CORRECTPAIRTEMPLATE[which][1]] == self.get_pair(which)[1][1]):
+            return True
+        return False
