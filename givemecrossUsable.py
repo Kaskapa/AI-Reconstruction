@@ -34,6 +34,7 @@ class CrossSolver:
                 if(cube.is_white_cross_solved()):
                     solution = a+line
                     self.allSol.append(solution.replace("\n", ""))
+                    break
 
     def solve(self):
         if(os.path.isfile(f"CATEGORY2/category_{self.cube.cateogry}.txt")):

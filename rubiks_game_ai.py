@@ -64,13 +64,16 @@ class RubiksGameAI:
         ]
         self.move_count = 0
         self.cube = Cube(0)
+        self.previous_moves = []
 
     def reset(self):
         self.cube = Cube(0)
         self.direction = Move.NONE
         self.move_count = 0
+        self.previous_moves = []
 
     def play_step(self, action):
+        self.previous_moves.append(action)
         self.move_count += 1
         # 1. collect user input
         for event in pygame.event.get():
@@ -82,21 +85,32 @@ class RubiksGameAI:
         self._move(action)
         reward = 0
         pairsInserted = self.cube.get_inserted_pairs()
+
+        realPairsInsertedCorectly = []
+
         if len(pairsInserted) > 0:
-            for i in range(len(pairsInserted)):
+            for pair in pairsInserted:
+                if self.cube.get_pair(pair)[0][0] == 0 or self.cube.get_pair(pair)[0][1] == 0 or self.cube.get_pair(pair)[0][2]:
+                    realPairsInsertedCorectly.append(pair)
+
+        if len(self.previous_moves) > 1 and self.previous_moves[-1] == self.previous_moves[-2]:
+            reward -= 20
+        if len(realPairsInsertedCorectly) > 0 and self.cube.is_white_cross_solved():
+            for i in range(len(realPairsInsertedCorectly)):
                 reward += 10
-        if self.move_count > 20:
+        if (len(realPairsInsertedCorectly) > 0 and self.cube.is_white_cross_solved()) or self.move_count > 100:
             self.move_count = 0
-            reward = -10
+            if len(realPairsInsertedCorectly) == 0 or not self.cube.is_white_cross_solved():
+                reward -= 10
+            else:
+                plusReward = 100-self.move_count * 1
+
+                reward += plusReward
             pairs = []
             for i in range(24):
                 pairs.append(self.cube.get_pair(i))
 
-            print("I am always true")
-
-            return reward, True, len(pairs), len(pairsInserted)
-
-        print(reward, action)
+            return reward, True, len(pairs), len(realPairsInsertedCorectly)
 
         # 5. update ui and clock
         self._update_ui()
@@ -155,8 +169,6 @@ class RubiksGameAI:
             self.direction = Move.ZPRIME
         elif np.array_equal(action, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]):
             self.direction = Move.NONE
-
-        print(self.direction)
 
         if self.direction == Move.LEFT:
             self.cube.left_turn()

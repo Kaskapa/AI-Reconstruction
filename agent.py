@@ -40,7 +40,7 @@ class Agent:
         self.epsilon = 0
         self.gamma = 0.9
         self.memory = deque(maxlen=MAX_MEMORY)
-        self.model = Linear_QNet(48, 256, 25)
+        self.model = Linear_QNet(102, 256, 25)
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
 
     def get_state(self, game):
@@ -191,6 +191,22 @@ class Agent:
             23 in insertedPairs
         ]
 
+        flattenedCube = []
+
+        for face in game.cube.cube:
+            for row in face:
+                for val in row:
+                    flattenedCube.append(val)
+
+        flattenedCube = []
+
+        for face in game.cube.cube:
+            for row in face:
+                for val in row:
+                    flattenedCube.append(val)
+
+        state += flattenedCube
+
         return np.array(state, dtype=int)
 
     def remember(self, state, action, reward, next_state, done):
@@ -209,9 +225,9 @@ class Agent:
         self.trainer.train_step(state, action, reward, next_state, done)
 
     def get_action(self, state):
-        self.epsilon = 160 - self.n_games
+        self.epsilon = 300 - self.n_games
         final_move = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        if random.randint(0, 200) < self.epsilon:
+        if random.randint(0, 600) < self.epsilon:
             move = random.randint(0, 24)
             final_move[move] = 1
         else:
@@ -282,8 +298,8 @@ def train():
 
             print(f'Game {agent.n_games}, Pairs paired: {pairsPaired}, Pairs inserted: {pairsInserted} Record: {record}')
 
-            plot_inserted_pairs.append(pairsInserted)
-            total_score += pairsInserted
+            plot_inserted_pairs.append(reward)
+            total_score += reward
             mean_score = total_score / agent.n_games
             plot_mean_inserted_pairs.append(mean_score)
             plot(plot_inserted_pairs, plot_mean_inserted_pairs)
