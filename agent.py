@@ -6,6 +6,7 @@ from rubiks_game_ai import RubiksGameAI, Move
 import csv
 from model import Linear_QNet, QTrainer
 from helper import plot
+from fillMemory import fillMemory
 from givemecrossUsable import CrossSolver
 
 
@@ -32,19 +33,22 @@ states = preprocess_data(file_path)
 
 MAX_MEMORY = 100_000
 BATCH_SIZE = 1000
-LR = 0.00001
+LR = 0.1
 
 class Agent:
     def __init__(self):
-        self.n_games = 0
+        self.n_games = 1
+        self.iterations = 0
         self.epsilon = 0
         self.gamma = 0.9
         self.memory = deque(maxlen=MAX_MEMORY)
-        self.model = Linear_QNet(102, 256, 25)
+        self.memory = fillMemory()
+        self.model = Linear_QNet(102, 256, 55)
+        # self.model.load_state_dict(torch.load('./model/model.pth'))
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
 
     def get_state(self, game):
-        insertedPairs = game.cube.get_inserted_pairs()
+        insertedPairs = game.cube.get_white_inserted_pairs()
         state = [
             #pair 1 paired
             game.cube.is_pair_paired(0),
@@ -198,13 +202,6 @@ class Agent:
                 for val in row:
                     flattenedCube.append(val)
 
-        flattenedCube = []
-
-        for face in game.cube.cube:
-            for row in face:
-                for val in row:
-                    flattenedCube.append(val)
-
         state += flattenedCube
 
         return np.array(state, dtype=int)
@@ -225,10 +222,11 @@ class Agent:
         self.trainer.train_step(state, action, reward, next_state, done)
 
     def get_action(self, state):
-        self.epsilon = 300 - self.n_games
-        final_move = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        epsilon_decay = 0.80
+        self.epsilon = 300 - (self.n_games * epsilon_decay)
+        final_move = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         if random.randint(0, 600) < self.epsilon:
-            move = random.randint(0, 24)
+            move = random.randint(0, 54)
             final_move[move] = 1
         else:
             state0 = torch.tensor(state, dtype=torch.float)
@@ -242,7 +240,6 @@ def train():
     plot_inserted_pairs = []
     plot_mean_inserted_pairs = []
     total_score = 0
-    record = 0
     agent = Agent()
     game = RubiksGameAI()
 
@@ -260,12 +257,13 @@ def train():
         game.cube.do_moves(i)
 
 
+    total_reward = 0
     while True:
         state_old = agent.get_state(game)
 
         final_move = agent.get_action(state_old)
 
-        reward, done, pairsPaired, pairsInserted = game.play_step(final_move)
+        reward, done, moveOnToTheNextState, pairsPaired, pairsInserted = game.play_step(final_move)
 
         state_new = agent.get_state(game)
 
@@ -273,7 +271,10 @@ def train():
 
         agent.remember(state_old, final_move, reward, state_new, done)
 
+        total_reward += reward
+
         if done:
+            agent.iterations += 1
             game.reset()
             state = states[agent.n_games]
             stateArr = state.split(" ")
@@ -288,21 +289,22 @@ def train():
             for i in crossSolutionArr:
                 game.cube.do_moves(i)
 
+            # if moveOnToTheNextState:
+            #     agent.n_games += 1
             agent.n_games += 1
 
             agent.train_long_memory()
 
-            if reward > record:
-                record = reward
-                agent.model.save()
+            agent.model.save()
 
-            print(f'Game {agent.n_games}, Pairs paired: {pairsPaired}, Pairs inserted: {pairsInserted} Record: {record}')
+            print(f'Game {agent.n_games}, Pairs paired: {pairsPaired}, Pairs inserted: {pairsInserted}, Game iterations: {agent.iterations}, Reward: {total_reward}')
 
-            plot_inserted_pairs.append(reward)
-            total_score += reward
-            mean_score = total_score / agent.n_games
+            plot_inserted_pairs.append(total_reward)
+            total_score += total_reward
+            mean_score = total_score / agent.iterations
             plot_mean_inserted_pairs.append(mean_score)
             plot(plot_inserted_pairs, plot_mean_inserted_pairs)
+            total_reward = 0
 
 if __name__ == '__main__':
     train()
