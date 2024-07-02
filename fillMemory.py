@@ -49,149 +49,149 @@ def fillMemory():
 
             insertedPairs = cube.get_white_inserted_pairs()
             stateOld = [
-                #pair 1 paired
-                cube.is_pair_paired(0),
+                # #pair 1 paired
+                # cube.is_pair_paired(0),
 
-                #pair 2 paired
-                cube.is_pair_paired(1),
+                # #pair 2 paired
+                # cube.is_pair_paired(1),
 
-                #pair 3 paired
-                cube.is_pair_paired(2),
+                # #pair 3 paired
+                # cube.is_pair_paired(2),
 
-                #pair 4 paired
-                cube.is_pair_paired(3),
+                # #pair 4 paired
+                # cube.is_pair_paired(3),
 
-                #pair 5 paired
-                cube.is_pair_paired(4),
+                # #pair 5 paired
+                # cube.is_pair_paired(4),
 
-                #pair 6 paired
-                cube.is_pair_paired(5),
+                # #pair 6 paired
+                # cube.is_pair_paired(5),
 
-                #pair 7 paired
-                cube.is_pair_paired(6),
+                # #pair 7 paired
+                # cube.is_pair_paired(6),
 
-                #pair 8 paired
-                cube.is_pair_paired(7),
+                # #pair 8 paired
+                # cube.is_pair_paired(7),
 
-                #pair 9 paired
-                cube.is_pair_paired(8),
+                # #pair 9 paired
+                # cube.is_pair_paired(8),
 
-                #pair 10 paired
-                cube.is_pair_paired(9),
+                # #pair 10 paired
+                # cube.is_pair_paired(9),
 
-                #pair 11 paired
-                cube.is_pair_paired(10),
+                # #pair 11 paired
+                # cube.is_pair_paired(10),
 
-                #pair 12 paired
-                cube.is_pair_paired(11),
+                # #pair 12 paired
+                # cube.is_pair_paired(11),
 
-                #pair 13 paired
-                cube.is_pair_paired(12),
+                # #pair 13 paired
+                # cube.is_pair_paired(12),
 
-                #pair 14 paired
-                cube.is_pair_paired(13),
+                # #pair 14 paired
+                # cube.is_pair_paired(13),
 
-                #pair 15 paired
-                cube.is_pair_paired(14),
+                # #pair 15 paired
+                # cube.is_pair_paired(14),
 
-                #pair 16 paired
-                cube.is_pair_paired(15),
+                # #pair 16 paired
+                # cube.is_pair_paired(15),
 
-                #pair 17 paired
-                cube.is_pair_paired(16),
+                # #pair 17 paired
+                # cube.is_pair_paired(16),
 
-                #pair 18 paired
-                cube.is_pair_paired(17),
+                # #pair 18 paired
+                # cube.is_pair_paired(17),
 
-                #pair 19 paired
-                cube.is_pair_paired(18),
+                # #pair 19 paired
+                # cube.is_pair_paired(18),
 
-                #pair 20 paired
-                cube.is_pair_paired(19),
+                # #pair 20 paired
+                # cube.is_pair_paired(19),
 
-                #pair 21 paired
-                cube.is_pair_paired(20),
+                # #pair 21 paired
+                # cube.is_pair_paired(20),
 
-                #pair 22 paired
-                cube.is_pair_paired(21),
+                # #pair 22 paired
+                # cube.is_pair_paired(21),
 
-                #pair 23 paired
-                cube.is_pair_paired(22),
+                # #pair 23 paired
+                # cube.is_pair_paired(22),
 
-                #pair 24 paired
-                cube.is_pair_paired(23),
+                # #pair 24 paired
+                # cube.is_pair_paired(23),
 
-                #pair 1 is inserted
-                0 in insertedPairs,
+                # #pair 1 is inserted
+                # 0 in insertedPairs,
 
-                #pair 2 is inserted
-                1 in insertedPairs,
+                # #pair 2 is inserted
+                # 1 in insertedPairs,
 
-                #pair 3 is inserted
-                2 in insertedPairs,
+                # #pair 3 is inserted
+                # 2 in insertedPairs,
 
-                #pair 4 is inserted
-                3 in insertedPairs,
+                # #pair 4 is inserted
+                # 3 in insertedPairs,
 
-                #pair 5 is inserted
-                4 in insertedPairs,
+                # #pair 5 is inserted
+                # 4 in insertedPairs,
 
-                #pair 6 is inserted
-                5 in insertedPairs,
+                # #pair 6 is inserted
+                # 5 in insertedPairs,
 
-                #pair 7 is inserted
-                6 in insertedPairs,
+                # #pair 7 is inserted
+                # 6 in insertedPairs,
 
-                #pair 8 is inserted
-                7 in insertedPairs,
+                # #pair 8 is inserted
+                # 7 in insertedPairs,
 
-                #pair 9 is inserted
-                8 in insertedPairs,
+                # #pair 9 is inserted
+                # 8 in insertedPairs,
 
-                #pair 10 is inserted
-                9 in insertedPairs,
+                # #pair 10 is inserted
+                # 9 in insertedPairs,
 
-                #pair 11 is inserted
-                10 in insertedPairs,
+                # #pair 11 is inserted
+                # 10 in insertedPairs,
 
-                #pair 12 is inserted
-                11 in insertedPairs,
+                # #pair 12 is inserted
+                # 11 in insertedPairs,
 
-                #pair 13 is inserted
-                12 in insertedPairs,
+                # #pair 13 is inserted
+                # 12 in insertedPairs,
 
-                #pair 14 is inserted
-                13 in insertedPairs,
+                # #pair 14 is inserted
+                # 13 in insertedPairs,
 
-                #pair 15 is inserted
-                14 in insertedPairs,
+                # #pair 15 is inserted
+                # 14 in insertedPairs,
 
-                #pair 16 is inserted
-                15 in insertedPairs,
+                # #pair 16 is inserted
+                # 15 in insertedPairs,
 
-                #pair 17 is inserted
-                16 in insertedPairs,
+                # #pair 17 is inserted
+                # 16 in insertedPairs,
 
-                #pair 18 is inserted
-                17 in insertedPairs,
+                # #pair 18 is inserted
+                # 17 in insertedPairs,
 
-                #pair 19 is inserted
-                18 in insertedPairs,
+                # #pair 19 is inserted
+                # 18 in insertedPairs,
 
-                #pair 20 is inserted
-                19 in insertedPairs,
+                # #pair 20 is inserted
+                # 19 in insertedPairs,
 
-                #pair 21 is inserted
-                20 in insertedPairs,
+                # #pair 21 is inserted
+                # 20 in insertedPairs,
 
-                #pair 22 is inserted
-                21 in insertedPairs,
+                # #pair 22 is inserted
+                # 21 in insertedPairs,
 
-                #pair 23 is inserted
-                22 in insertedPairs,
+                # #pair 23 is inserted
+                # 22 in insertedPairs,
 
-                #pair 24 is inserted
-                23 in insertedPairs
+                # #pair 24 is inserted
+                # 23 in insertedPairs
             ]
 
             flattenedCube = []
@@ -225,149 +225,149 @@ def fillMemory():
 
             insertedPairs = cube.get_white_inserted_pairs()
             next_state = [
-                #pair 1 paired
-                cube.is_pair_paired(0),
+                # #pair 1 paired
+                # cube.is_pair_paired(0),
 
-                #pair 2 paired
-                cube.is_pair_paired(1),
+                # #pair 2 paired
+                # cube.is_pair_paired(1),
 
-                #pair 3 paired
-                cube.is_pair_paired(2),
+                # #pair 3 paired
+                # cube.is_pair_paired(2),
 
-                #pair 4 paired
-                cube.is_pair_paired(3),
+                # #pair 4 paired
+                # cube.is_pair_paired(3),
 
-                #pair 5 paired
-                cube.is_pair_paired(4),
+                # #pair 5 paired
+                # cube.is_pair_paired(4),
 
-                #pair 6 paired
-                cube.is_pair_paired(5),
+                # #pair 6 paired
+                # cube.is_pair_paired(5),
 
-                #pair 7 paired
-                cube.is_pair_paired(6),
+                # #pair 7 paired
+                # cube.is_pair_paired(6),
 
-                #pair 8 paired
-                cube.is_pair_paired(7),
+                # #pair 8 paired
+                # cube.is_pair_paired(7),
 
-                #pair 9 paired
-                cube.is_pair_paired(8),
+                # #pair 9 paired
+                # cube.is_pair_paired(8),
 
-                #pair 10 paired
-                cube.is_pair_paired(9),
+                # #pair 10 paired
+                # cube.is_pair_paired(9),
 
-                #pair 11 paired
-                cube.is_pair_paired(10),
+                # #pair 11 paired
+                # cube.is_pair_paired(10),
 
-                #pair 12 paired
-                cube.is_pair_paired(11),
+                # #pair 12 paired
+                # cube.is_pair_paired(11),
 
-                #pair 13 paired
-                cube.is_pair_paired(12),
+                # #pair 13 paired
+                # cube.is_pair_paired(12),
 
-                #pair 14 paired
-                cube.is_pair_paired(13),
+                # #pair 14 paired
+                # cube.is_pair_paired(13),
 
-                #pair 15 paired
-                cube.is_pair_paired(14),
+                # #pair 15 paired
+                # cube.is_pair_paired(14),
 
-                #pair 16 paired
-                cube.is_pair_paired(15),
+                # #pair 16 paired
+                # cube.is_pair_paired(15),
 
-                #pair 17 paired
-                cube.is_pair_paired(16),
+                # #pair 17 paired
+                # cube.is_pair_paired(16),
 
-                #pair 18 paired
-                cube.is_pair_paired(17),
+                # #pair 18 paired
+                # cube.is_pair_paired(17),
 
-                #pair 19 paired
-                cube.is_pair_paired(18),
+                # #pair 19 paired
+                # cube.is_pair_paired(18),
 
-                #pair 20 paired
-                cube.is_pair_paired(19),
+                # #pair 20 paired
+                # cube.is_pair_paired(19),
 
-                #pair 21 paired
-                cube.is_pair_paired(20),
+                # #pair 21 paired
+                # cube.is_pair_paired(20),
 
-                #pair 22 paired
-                cube.is_pair_paired(21),
+                # #pair 22 paired
+                # cube.is_pair_paired(21),
 
-                #pair 23 paired
-                cube.is_pair_paired(22),
+                # #pair 23 paired
+                # cube.is_pair_paired(22),
 
-                #pair 24 paired
-                cube.is_pair_paired(23),
+                # #pair 24 paired
+                # cube.is_pair_paired(23),
 
-                #pair 1 is inserted
-                0 in insertedPairs,
+                # #pair 1 is inserted
+                # 0 in insertedPairs,
 
-                #pair 2 is inserted
-                1 in insertedPairs,
+                # #pair 2 is inserted
+                # 1 in insertedPairs,
 
-                #pair 3 is inserted
-                2 in insertedPairs,
+                # #pair 3 is inserted
+                # 2 in insertedPairs,
 
-                #pair 4 is inserted
-                3 in insertedPairs,
+                # #pair 4 is inserted
+                # 3 in insertedPairs,
 
-                #pair 5 is inserted
-                4 in insertedPairs,
+                # #pair 5 is inserted
+                # 4 in insertedPairs,
 
-                #pair 6 is inserted
-                5 in insertedPairs,
+                # #pair 6 is inserted
+                # 5 in insertedPairs,
 
-                #pair 7 is inserted
-                6 in insertedPairs,
+                # #pair 7 is inserted
+                # 6 in insertedPairs,
 
-                #pair 8 is inserted
-                7 in insertedPairs,
+                # #pair 8 is inserted
+                # 7 in insertedPairs,
 
-                #pair 9 is inserted
-                8 in insertedPairs,
+                # #pair 9 is inserted
+                # 8 in insertedPairs,
 
-                #pair 10 is inserted
-                9 in insertedPairs,
+                # #pair 10 is inserted
+                # 9 in insertedPairs,
 
-                #pair 11 is inserted
-                10 in insertedPairs,
+                # #pair 11 is inserted
+                # 10 in insertedPairs,
 
-                #pair 12 is inserted
-                11 in insertedPairs,
+                # #pair 12 is inserted
+                # 11 in insertedPairs,
 
-                #pair 13 is inserted
-                12 in insertedPairs,
+                # #pair 13 is inserted
+                # 12 in insertedPairs,
 
-                #pair 14 is inserted
-                13 in insertedPairs,
+                # #pair 14 is inserted
+                # 13 in insertedPairs,
 
-                #pair 15 is inserted
-                14 in insertedPairs,
+                # #pair 15 is inserted
+                # 14 in insertedPairs,
 
-                #pair 16 is inserted
-                15 in insertedPairs,
+                # #pair 16 is inserted
+                # 15 in insertedPairs,
 
-                #pair 17 is inserted
-                16 in insertedPairs,
+                # #pair 17 is inserted
+                # 16 in insertedPairs,
 
-                #pair 18 is inserted
-                17 in insertedPairs,
+                # #pair 18 is inserted
+                # 17 in insertedPairs,
 
-                #pair 19 is inserted
-                18 in insertedPairs,
+                # #pair 19 is inserted
+                # 18 in insertedPairs,
 
-                #pair 20 is inserted
-                19 in insertedPairs,
+                # #pair 20 is inserted
+                # 19 in insertedPairs,
 
-                #pair 21 is inserted
-                20 in insertedPairs,
+                # #pair 21 is inserted
+                # 20 in insertedPairs,
 
-                #pair 22 is inserted
-                21 in insertedPairs,
+                # #pair 22 is inserted
+                # 21 in insertedPairs,
 
-                #pair 23 is inserted
-                22 in insertedPairs,
+                # #pair 23 is inserted
+                # 22 in insertedPairs,
 
-                #pair 24 is inserted
-                23 in insertedPairs
+                # #pair 24 is inserted
+                # 23 in insertedPairs
             ]
 
             flattenedCube = []

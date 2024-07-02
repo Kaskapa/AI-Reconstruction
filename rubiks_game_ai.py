@@ -3,6 +3,7 @@ import random
 from enum import Enum
 from collections import namedtuple
 from rubiks_cube import Cube
+import math
 import numpy as np
 
 pygame.init()
@@ -76,7 +77,7 @@ BLACK = (0, 0, 0)
 SPEED = 1000
 
 class RubiksGameAI:
-    def __init__(self, w=700, h=580):
+    def __init__(self, w=1000, h=580):
         self.w = w
         self.h = h
         self.direction = Move.NONE
@@ -118,18 +119,27 @@ class RubiksGameAI:
         done = False
         moveOnToTheNextState = False
 
-        if len(self.previous_moves) > 1 and self.previous_moves[-1] == self.previous_moves[-2]:
-            reward -= 5
+        # if len(self.previous_moves) > 1 and self.previous_moves[-1] == self.previous_moves[-2]:
+        #     reward -= 5
+        if len(self.previous_moves) > 1:
+            rewardToTakeDown = 0
+            for i in range(len(self.previous_moves)-1):
+                if self.previous_moves[i] == self.previous_moves[i+1]:
+                    rewardToTakeDown += 0.25
+                if rewardToTakeDown > 0 and not self.previous_moves[i] == self.previous_moves[i+1]:
+                    break
+
+            reward -= rewardToTakeDown
         if len(pairsInserted) > 0 and self.cube.is_white_cross_solved():
             for i in range(len(pairsInserted)):
                 reward += 10
-        if (len(pairsInserted) > 0 and self.cube.is_white_cross_solved()) or self.move_count > 100:
+        if (len(pairsInserted) > 0 and self.cube.is_white_cross_solved()) or self.move_count > 50:
             done = True
             if len(pairsInserted) == 0 or not self.cube.is_white_cross_solved():
                 reward -= 2
             else:
                 moveOnToTheNextState = True
-                plusReward = 100-self.move_count
+                plusReward = 51-self.move_count
 
                 reward += plusReward
 
@@ -149,7 +159,7 @@ class RubiksGameAI:
         return reward, done, moveOnToTheNextState, 0, 0
 
     def _move(self, action):
-        if np.array_equal(action, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]):
+        if np.array_equal(action, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]):
             self.direction = Move.LEFT
         elif np.array_equal(action, [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]):
             self.direction = Move.LEFTPRIME
@@ -534,30 +544,32 @@ class RubiksGameAI:
 
     def _update_ui(self):
         self.display.fill(BLACK)
-        self._drawCube()
+        self._drawCube(8)
         pygame.display.flip()
 
-    def _drawCube(self):
+    def _drawCube(self, which):
+        row = math.floor(which/4)
+        which = which % 4
         for i in range(len(self.cube.cube[0])):
             for j in range(len(self.cube.cube[0][i])):
-                pygame.draw.rect(self.display, self.colors[self.cube.cube[0][i][j]], (j*50 + 185, i*50 + 25, 40, 40))
+                pygame.draw.rect(self.display, self.colors[self.cube.cube[0][i][j]], ((which*200)+j*15 + 60, (row*150)+i*15 + 10, 10, 10))
 
         for i in range(len(self.cube.cube[1])):
             for j in range(len(self.cube.cube[1][i])):
-                pygame.draw.rect(self.display, self.colors[self.cube.cube[1][i][j]], (j*50 + 25, i*50 + 185, 40, 40))
+                pygame.draw.rect(self.display, self.colors[self.cube.cube[1][i][j]], ((which*200)+j*15 + 10, (row*150)+i*15 + 60, 10, 10))
 
         for i in range(len(self.cube.cube[2])):
             for j in range(len(self.cube.cube[2][i])):
-                pygame.draw.rect(self.display, self.colors[self.cube.cube[2][i][j]], (j*50 + 185, i*50 + 185, 40, 40))
+                pygame.draw.rect(self.display, self.colors[self.cube.cube[2][i][j]], ((which*200)+j*15 + 60, (row*150)+i*15 + 60, 10, 10))
 
         for i in range(len(self.cube.cube[3])):
             for j in range(len(self.cube.cube[3][i])):
-                pygame.draw.rect(self.display, self.colors[self.cube.cube[3][i][j]], (j*50 + 345, i*50 + 185, 40, 40))
+                pygame.draw.rect(self.display, self.colors[self.cube.cube[3][i][j]], ((which*200)+j*15 + 110, (row*150)+i*15 + 60, 10, 10))
 
         for i in range(len(self.cube.cube[4])):
             for j in range(len(self.cube.cube[4][i])):
-                pygame.draw.rect(self.display, self.colors[self.cube.cube[4][i][j]], (j*50 + 505, i*50 + 185, 40, 40))
+                pygame.draw.rect(self.display, self.colors[self.cube.cube[4][i][j]], ((which*200)+j*15 + 160, (row*150)+i*15 + 60, 10, 10))
 
         for i in range(len(self.cube.cube[5])):
             for j in range(len(self.cube.cube[5][i])):
-                pygame.draw.rect(self.display, self.colors[self.cube.cube[5][i][j]], (j*50 + 185, i*50 + 345, 40, 40))
+                pygame.draw.rect(self.display, self.colors[self.cube.cube[5][i][j]], ((which*200)+j*15 + 60, (row*150)+i*15 + 110, 10, 10))
