@@ -1,50 +1,47 @@
 import pygame
 import neat
-import time
 import os
 import random
 from rubiks_cube import Cube
-from givemecrossUsable import CrossSolver
 import math
 import pickle
-import csv
 
-WIN_WIDTH = 1200
-WIN_HEIGHT = 1000
+WIN_WIDTH = 1000
+WIN_HEIGHT = 800
 
 pygame.font.init()
 STAT_FONT = pygame.font.SysFont("C:/Users/krist/Documents/Code/PythonWorkspace/flappy Bird/Roboto-Black.ttf", 50)
 
-colors = [(255, 255, 255), (0, 0, 255), (0, 255, 0), (255, 0, 0), (255, 165, 0), (255, 255, 0), (255, 255, 255)]
+colors = [(255, 255, 255), (0, 0, 255), (0, 255, 0), (255, 0, 0), (255, 165, 0), (255, 255, 0), (255, 255, 255), (255, 192, 203)]
 MOVES = ["L", "L'", "L2", "R", "R'", "R2", "U", "U'", "U2", "D", "D'", "D2", "F", "F'", "F2", "B", "B'", "B2"]
 ALTERNATIVEMOVES = [["L", "R"], ["U", "D"], ["F", "B"]]
 
 def draw_cube(which, cube, display):
-    row = math.floor(which/5)
-    which = which % 5
+    row = math.floor(which/10)
+    which = which % 10
     for i in range(len(cube.cube[0])):
         for j in range(len(cube.cube[0][i])):
-            pygame.draw.rect(display, colors[cube.cube[0][i][j]], ((which*200)+j*15 + 60, (row*150)+i*15 + 10, 10, 10))
+            pygame.draw.rect(display, colors[cube.cube[0][i][j]], ((which*100)+j*5 + 40, (row*50)+i*5 + 10, 3, 3))
 
     for i in range(len(cube.cube[1])):
         for j in range(len(cube.cube[1][i])):
-            pygame.draw.rect(display, colors[cube.cube[1][i][j]], ((which*200)+j*15 + 10, (row*150)+i*15 + 60, 10, 10))
+            pygame.draw.rect(display, colors[cube.cube[1][i][j]], ((which*100)+j*5 + 20, (row*50)+i*5 + 30, 3, 3))
 
     for i in range(len(cube.cube[2])):
         for j in range(len(cube.cube[2][i])):
-            pygame.draw.rect(display, colors[cube.cube[2][i][j]], ((which*200)+j*15 + 60, (row*150)+i*15 + 60, 10, 10))
+            pygame.draw.rect(display, colors[cube.cube[2][i][j]], ((which*100)+j*5 + 40, (row*50)+i*5 + 30, 3, 3))
 
     for i in range(len(cube.cube[3])):
         for j in range(len(cube.cube[3][i])):
-            pygame.draw.rect(display, colors[cube.cube[3][i][j]], ((which*200)+j*15 + 110, (row*150)+i*15 + 60, 10, 10))
+            pygame.draw.rect(display, colors[cube.cube[3][i][j]], ((which*100)+j*5 + 60, (row*50)+i*5 + 30, 3, 3))
 
     for i in range(len(cube.cube[4])):
         for j in range(len(cube.cube[4][i])):
-            pygame.draw.rect(display, colors[cube.cube[4][i][j]], ((which*200)+j*15 + 160, (row*150)+i*15 + 60, 10, 10))
+            pygame.draw.rect(display, colors[cube.cube[4][i][j]], ((which*100)+j*5 + 80, (row*50)+i*5 + 30, 3, 3))
 
     for i in range(len(cube.cube[5])):
         for j in range(len(cube.cube[5][i])):
-            pygame.draw.rect(display, colors[cube.cube[5][i][j]], ((which*200)+j*15 + 60, (row*150)+i*15 + 110, 10, 10))
+            pygame.draw.rect(display, colors[cube.cube[5][i][j]], ((which*100)+j*5 + 40, (row*50)+i*5 + 50, 3, 3))
 
 
 def draw_window(display, cubes):
@@ -54,25 +51,6 @@ def draw_window(display, cubes):
 
     pygame.display.update()
     pygame.display.flip()
-
-
-def preprocess_data(file_path):
-    with open(file_path, 'r') as file:
-        csvreader = csv.reader(file)
-        stateStr = []
-        for row in csvreader:
-            row_str = row[0] + " " + row[1] + " " + row[2]
-            # Convert the scramble to a list of integers
-            stateStr.append(row_str.split(","))
-
-    return stateStr
-
-script_dir = os.path.dirname(os.path.abspath(__file__))
-
-# Construct the full path to the CSV file
-file_path = os.path.join(script_dir, "output1.csv")
-
-states = preprocess_data(file_path)
 
 increaseIndex = False
 
@@ -89,21 +67,23 @@ def main(genomes, config):
     ge = []
     cubes = []
 
-    scramble = states[index][0]
+    iteration = 0
 
-    crossSolver = CrossSolver(scramble)
-    crossSolver.solve()
+    scramble = ""
+
+    while iteration < 3:
+        scramble += " " + random.choice(MOVES)
+        iteration += 1
+
+    print(scramble)
 
     for _, g in genomes:
         net = neat.nn.FeedForwardNetwork.create(g, config)
         nets.append(net)
 
-        cube = Cube(0)
+        cube = Cube(2)
 
         cube.do_algorithm(scramble)
-
-        # crossSolution = crossSolver.allSol[0]
-        # cube.do_algorithm(crossSolution)
 
         cube.previousMoves = []
 
@@ -113,8 +93,6 @@ def main(genomes, config):
 
     display = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
     clock = pygame.time.Clock()
-
-    number_of_moves = 0
 
     run = True
     while run:
@@ -144,13 +122,7 @@ def main(genomes, config):
                     if (cube.is_pair_paired(i) and 0 in cube.get_pair(i)[0] and 0 not in cube.get_pair(i)[1]):
                         whitePairsPaired.append(i)
 
-                if(len(whitePairsPaired) > 0):
-                    ge[x].fitness += 5
-
-                if(cube.is_white_cross_solved()):
-                    ge[x].fitness += 5
-
-                if len(cube.get_white_inserted_pairs()) > 0 and cube.is_white_cross_solved():
+                if len(cube.get_white_inserted_pairs()) == 4 and cube.is_white_cross_solved():
                     ge[x].fitness += 100
                     print("Solved")
                     # cubes.pop(x)
@@ -190,8 +162,6 @@ def main(genomes, config):
         if cubes.count(cubes[0]) == len(cubes):
             break
 
-        number_of_moves += 1
-
         draw_window(display, cubes)
 
 def run(config_path):
@@ -204,7 +174,7 @@ def run(config_path):
     stats = neat.StatisticsReporter()
     p.add_reporter(stats)
 
-    winner = p.run(main, 200)
+    winner = p.run(main, 2000)
 
     # Save the trained model
     model_path = os.path.join(local_dir, "trained_model.pkl")
@@ -218,7 +188,7 @@ def run(config_path):
 def runPopulation(config_path):
     config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction, neat.DefaultSpeciesSet, neat.DefaultStagnation, config_path)
 
-    with open('NEAT/population.pkl', 'rb') as f:
+    with open('NEATv2/population.pkl', 'rb') as f:
         p = pickle.load(f)
 
     #OPTIONAL
@@ -226,7 +196,7 @@ def runPopulation(config_path):
     stats = neat.StatisticsReporter()
     p.add_reporter(stats)
 
-    winner = p.run(main, 500)
+    winner = p.run(main, 1000)
 
     # Save the trained model
     model_path = os.path.join(local_dir, "trained_model.pkl")
@@ -241,4 +211,5 @@ if __name__ == "__main__":
     local_dir = os.path.dirname(__file__)
     config_path = os.path.join(local_dir, "config-feedforward.txt")
     runPopulation(config_path)
+    # run(config_path)
     print(index)

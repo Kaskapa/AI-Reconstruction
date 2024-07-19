@@ -6,12 +6,11 @@ class Cube:
         self.corners = []
         self.edges = []
         self.pairs = []
+        self.previous_moves = []
         self.CORNERTEMPLATE = [[[0,0], [1,0], [4,1]], [[0,1], [3,1], [4,0]], [[0,2], [1,1], [2,0]], [[0,3],[2,1], [3,0]], [[5,2], [1,2], [4,3]], [[5,3], [3,3], [4,2]], [[5,0], [1,3], [2,2]], [[5,1], [2,3], [3,2]]]
         self.EDGETEMPLATE = [[[0,0], [4,0]], [[0,1], [1,0]], [[0,2],[3,0]], [[0,3], [2,0]], [[4,2], [1,1]], [[2,1], [1,2]], [[3,1], [2,2]], [[4,1], [3,2]], [[5,0], [2,3]], [[5,1], [1,3]], [[5,2], [3,3]], [[5,3], [4,3]]]
         self.PAIRTEMPLATE = [[0,4],[1,7],[2, 5], [3,6], [4, 4], [5, 7], [6, 5], [7,6], [0,0], [2,3], [4, 11], [6,8], [1, 0], [3,3], [7, 8], [5, 11], [0, 1], [1, 2], [4, 9], [5, 10], [2, 1], [3,2], [6,9], [7, 10]]
         self.CORRECTPAIRTEMPLATE = [[2,1], [2,1], [2,1], [2,1], [2,1], [2,1], [2,1], [2,1], [0, 2], [0,2], [0,2], [0,2], [0,2], [0,1], [0,1], [0,2], [0, 1], [0,1], [0,1], [0,1], [0,1], [0,2], [0,1], [0,2]];
-        self.WHITEF2L = [[1,2], [2,3], [3,4], [4,1]]
-        self.previousMoves = []
         if(type == 0):
             self.cube = [
                 [[0, 0, 0],
@@ -65,16 +64,6 @@ class Cube:
                 [-1, -1, -1]]
             ]
 
-
-    def reset(self):
-        self.cube = [
-            [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
-            [[1, 1, 1], [1, 1, 1], [1, 1, 1]],
-            [[2, 2, 2], [2, 2, 2], [2, 2, 2]],
-            [[3, 3, 3], [3, 3, 3], [3, 3, 3]],
-            [[4, 4, 4], [4, 4, 4], [4, 4, 4]],
-            [[5, 5, 5], [5, 5, 5], [5, 5, 5]]
-        ]
 
     def is_up_cross_solved(self, color):
         return (self.cube[0][0][1] == color and
@@ -461,7 +450,7 @@ class Cube:
         self.front_turn()
 
     def do_moves(self, action):
-        self.previousMoves.append(action)
+        self.previous_moves.append(action)
         if(action == "L"):
             self.left_turn()
         elif(action == "L'"):
@@ -626,172 +615,6 @@ class Cube:
             self.z_rotation()
         return self
 
-    def do_moves_numerical(self, action):
-        self.previousMoves.append(action)
-        if(action == 0):  # L move
-            self.left_turn()
-        elif(action == 1):  # L' move
-            self.left_turn()
-            self.left_turn()
-            self.left_turn()
-        elif(action == 2):  # L2 move
-            self.left_turn()
-            self.left_turn()
-        elif(action == 3):  # R move
-            self.right_turn()
-        elif(action == 4):  # R' move
-            self.right_turn()
-            self.right_turn()
-            self.right_turn()
-        elif(action == 5):  # R2 move
-            self.right_turn()
-            self.right_turn()
-        elif(action == 6):  # U move
-            self.up_turn()
-        elif(action == 7):  # U' move
-            self.up_turn()
-            self.up_turn()
-            self.up_turn()
-        elif(action == 8):  # U2 move
-            self.up_turn()
-            self.up_turn()
-        elif(action == 9):  # D move
-            self.down_turn()
-        elif(action == 10):  # D' move
-            self.down_turn()
-            self.down_turn()
-            self.down_turn()
-        elif(action == 11):  # D2 move
-            self.down_turn()
-            self.down_turn()
-        elif(action == 12):  # F move
-            self.front_turn()
-        elif(action == 13):  # F' move
-            self.front_turn()
-            self.front_turn()
-            self.front_turn()
-        elif(action == 14):  # F2 move
-            self.front_turn()
-            self.front_turn()
-        elif(action == 15):  # B move
-            self.back_turn()
-        elif(action == 16):  # B' move
-            self.back_turn()
-            self.back_turn()
-            self.back_turn()
-        elif(action == 17):  # B2 move
-            self.back_turn()
-            self.back_turn()
-        elif(action == 18):  # M move
-            self.middle_turn()
-        elif(action == 19):  # E move
-            self.equatorial_turn()
-        elif(action == 20):  # S move
-            self.standing_turn()
-        elif(action == 21):  # M2 move
-            self.middle_turn()
-            self.middle_turn()
-        elif(action == 22):  # E2 move
-            self.equatorial_turn()
-            self.equatorial_turn()
-        elif(action == 23):  # S2 move
-            self.standing_turn()
-            self.standing_turn()
-        elif(action == 24):  # M' move
-            self.middle_turn()
-            self.middle_turn()
-            self.middle_turn()
-        elif(action == 25):  # E' move
-            self.equatorial_turn()
-            self.equatorial_turn()
-            self.equatorial_turn()
-        elif(action == 26):  # S' move
-            self.standing_turn()
-            self.standing_turn()
-            self.standing_turn()
-        elif(action == 27):  # d move
-            self.d_small_turn()
-        elif(action == 28):  # u move
-            self.u_small_turn()
-        elif(action == 29):  # r move
-            self.r_small_turn()
-        elif(action == 30):  # l move
-            self.l_small_turn()
-        elif(action == 31):  # f move
-            self.f_small_turn()
-        elif(action == 32):  # b move
-            self.b_small_turn()
-        elif(action == 33):  # d' move
-            self.d_small_turn()
-            self.d_small_turn()
-            self.d_small_turn()
-        elif(action == 34):  # u' move
-            self.u_small_turn()
-            self.u_small_turn()
-            self.u_small_turn()
-        elif(action == 35):  # r' move
-            self.r_small_turn()
-            self.r_small_turn()
-            self.r_small_turn()
-        elif(action == 36):  # l' move
-            self.l_small_turn()
-            self.l_small_turn()
-            self.l_small_turn()
-        elif(action == 37):  # f' move
-            self.f_small_turn()
-            self.f_small_turn()
-            self.f_small_turn()
-        elif(action == 38):  # b' move
-            self.b_small_turn()
-            self.b_small_turn()
-            self.b_small_turn()
-        elif(action == 39):  # d2 move
-            self.d_small_turn()
-            self.d_small_turn()
-        elif(action == 40):  # u2 move
-            self.u_small_turn()
-            self.u_small_turn()
-        elif(action == 41):  # r2 move
-            self.r_small_turn()
-            self.r_small_turn()
-        elif(action == 42):  # l2 move
-            self.l_small_turn()
-            self.l_small_turn()
-        elif(action == 43):  # f2 move
-            self.f_small_turn()
-            self.f_small_turn()
-        elif(action == 44):  # b2 move
-            self.b_small_turn()
-            self.b_small_turn()
-        elif(action == 45):  # y move
-            self.y_rotation()
-        elif(action == 46):  # x move
-            self.x_rotation()
-        elif(action == 47):  # z move
-            self.z_rotation()
-        elif(action == 48):  # y' move
-            self.y_rotation()
-            self.y_rotation()
-            self.y_rotation()
-        elif(action == 49):  # x' move
-            self.x_rotation()
-            self.x_rotation()
-            self.x_rotation()
-        elif(action == 50):  # z' move
-            self.z_rotation()
-            self.z_rotation()
-            self.z_rotation()
-        elif(action == 51):  # y2 move
-            self.y_rotation()
-            self.y_rotation()
-        elif(action == 52):  # x2 move
-            self.x_rotation()
-            self.x_rotation()
-        elif(action == 53):  # z2 move
-            self.z_rotation()
-            self.z_rotation()
-        return self
-
     def do_algorithm(self, algorithm):
         algorithmArr  = algorithm.split(" ")
         for action in algorithmArr:
@@ -799,7 +622,6 @@ class Cube:
         return self
 
     def do_alternative_moves(self, action):
-        self.previousMoves.append(action)
         if(action == "L'"):
             self.left_turn()
         elif(action == "L"):
@@ -930,6 +752,8 @@ class Cube:
         self.corners = corners_array_array
 
     def get_corner(self, which):
+        self.put_edges_in_array()
+        self.put_corners_in_array()
         cornerTuple = [self.corners[self.CORNERTEMPLATE[which][0][0]][self.CORNERTEMPLATE[which][0][1]], self.corners[self.CORNERTEMPLATE[which][1][0]][self.CORNERTEMPLATE[which][1][1]], self.corners[self.CORNERTEMPLATE[which][2][0]][self.CORNERTEMPLATE[which][2][1]]]
         return cornerTuple
 
@@ -947,6 +771,8 @@ class Cube:
         self.edges = edges_array_array
 
     def get_edge(self, which):
+        self.put_edges_in_array()
+        self.put_corners_in_array()
         edgeTuple = [self.edges[self.EDGETEMPLATE[which][0][0]][self.EDGETEMPLATE[which][0][1]], self.edges[self.EDGETEMPLATE[which][1][0]][self.EDGETEMPLATE[which][1][1]]]
         return edgeTuple
 
@@ -956,9 +782,19 @@ class Cube:
         pairTuple = [self.get_corner(self.PAIRTEMPLATE[which][0]), self.get_edge(self.PAIRTEMPLATE[which][1])]
         return pairTuple
 
+    def get_corners(self):
+        corners = []
+        for i in range(8):
+            corners.append(self.get_corner(i))
+        return corners
+
+    def get_edges(self):
+        edges = []
+        for i in range(12):
+            edges.append(self.get_edge(i))
+        return edges
+
     def get_inserted_pairs(self):
-        self.put_corners_in_array()
-        self.put_edges_in_array()
         correctlyInsertedPairs = []
         for i in range(24):
             if(self.is_pair_paired(i)):
@@ -981,8 +817,6 @@ class Cube:
         return False
 
     def get_white_inserted_pairs(self):
-        self.put_corners_in_array()
-        self.put_edges_in_array()
         correctlyInsertedPairs = self.get_inserted_pairs()
         whiteInsertedPairs = []
         for i in correctlyInsertedPairs:
