@@ -3,6 +3,11 @@ from tqdm import tqdm
 import copy
 from rubiks_cube import Cube
 
+import sys
+print(sys.getrecursionlimit())
+
+sys.setrecursionlimit(10000)
+
 # Load heuristic databases
 with open('C:/Users/krist/Documents/GitHub/AI-Reconstruction/heuristic_f2l_one_pair_safe.json', 'r') as f:
     corner_pdb = json.load(f)

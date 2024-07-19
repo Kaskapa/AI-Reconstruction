@@ -25,22 +25,18 @@ def build_heuristic_db(cube, actions, max_moves=10, heuristic=None):
         return tuple(tuple(edge) for edge in state)
 
 
-    que = [(cube, 0, [])]
+    que = [(cube, 0, [], str(get_f2l_state(cube)))]
     node_count = sum([len(actions) ** (x + 1) for x in range(max_moves + 1)])
 
     with tqdm(total=node_count, desc='Heuristic DB') as pbar:
-        while que:
-            current_cube, depth, prev_actions = que.pop(0)  # Using pop(0) for breadth-first search
+        while True:
+            if not que:
+                break
+            current_cube, depth, prev_actions, previous_state = que.pop(0)  # Using pop(0) for breadth-first search
 
             if depth > max_moves:
                 pbar.update(1)
                 continue
-
-            f2l_state = get_f2l_state(current_cube)
-            state_str = str(f2l_state)
-
-            if state_str not in heuristic or heuristic[state_str] > depth:
-                heuristic[state_str] = depth
 
             if depth == max_moves:
                 pbar.update(1)
@@ -51,11 +47,21 @@ def build_heuristic_db(cube, actions, max_moves=10, heuristic=None):
                 new_cube.do_moves(action)
                 new_actions = prev_actions + [action]
 
-                if len(new_actions) > 1 and new_actions[-1][0] == new_actions[-2][0]:
+                f2l_state = get_f2l_state(new_cube)
+                state_str = str(f2l_state)
+
+                if state_str == previous_state:
                     pbar.update(1)
                     continue
 
-                que.append((new_cube, depth + 1, new_actions))
+                if state_str not in heuristic or heuristic[state_str] > depth:
+                    heuristic[state_str] = depth
+
+                if state_str in heuristic and heuristic[state_str] < depth:
+                    pbar.update(1)
+                    continue
+
+                que.append((new_cube, depth + 1, new_actions, state_str))
                 pbar.update(1)
 
     return heuristic
